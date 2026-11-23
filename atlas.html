@@ -1,0 +1,4872 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Gormenghast Atlas</title>
+
+<style>
+html,body{
+    margin:0;
+    overflow:hidden;
+    background:black;
+}
+
+#ui{
+    position:absolute;
+    left:20px;
+    top:56px;
+    color:white;
+    font-family:Arial,sans-serif;
+    letter-spacing:2px;
+    z-index:10;
+}
+
+#ui h1{
+    margin:0;
+    font-size:26px;
+    font-weight:300;
+}
+
+#ui p{
+    margin:4px 0;
+    color:#888;
+}
+
+#layerAnalysis{
+    margin-top:10px;
+    max-width:360px;
+    font-size:12px;
+    line-height:1.6;
+    color:#bbb;
+    font-weight:300;
+    letter-spacing:0.5px;
+    opacity:0;
+    transform:translateY(-4px);
+    transition:opacity 0.6s ease, transform 0.6s ease;
+}
+
+#layerAnalysis.visible{
+    opacity:1;
+    transform:translateY(0);
+}
+
+#subLayerTabs{
+    display:none;
+    gap:8px;
+    margin-top:12px;
+    pointer-events:auto;
+}
+
+#subLayerTabs button{
+    background:transparent;
+    color:#999;
+    border:1px solid #555;
+    font-family:Arial,sans-serif;
+    letter-spacing:1px;
+    font-size:10px;
+    padding:5px 10px;
+    cursor:pointer;
+    transition:color 0.3s ease, border-color 0.3s ease;
+}
+
+#subLayerTabs button:hover{
+    color:#ddd;
+    border-color:#999;
+}
+
+#subLayerTabs button.active{
+    color:#000;
+    background:#fff;
+    border-color:#fff;
+}
+
+#invertToggle{
+    display:none;
+    margin-top:12px;
+}
+
+#invertToggle button{
+    background:transparent;
+    color:#999;
+    border:1px solid #555;
+    font-family:Arial,sans-serif;
+    letter-spacing:1px;
+    font-size:10px;
+    padding:5px 10px;
+    cursor:pointer;
+    transition:color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+
+#invertToggle button:hover{
+    color:#ddd;
+    border-color:#999;
+}
+
+#invertToggle button.active{
+    color:#000;
+    background:#fff;
+    border-color:#fff;
+}
+
+#modeToggleWrap{
+    margin-top:14px;
+}
+
+#modeToggleWrap button{
+    background:transparent;
+    color:#999;
+    border:1px solid #555;
+    font-family:Arial,sans-serif;
+    letter-spacing:1px;
+    font-size:10px;
+    padding:5px 10px;
+    cursor:pointer;
+    transition:color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+
+#modeToggleWrap button:hover{
+    color:#ddd;
+    border-color:#999;
+}
+
+#modeToggleWrap button.active{
+    color:#000;
+    background:#fff;
+    border-color:#fff;
+}
+
+#connectorPanel{
+    display:none;
+    margin-top:14px;
+    padding-top:10px;
+    border-top:1px solid #333;
+    max-width:220px;
+}
+
+#connectorPanel .connectorPanelTitle{
+    margin:0 0 8px 0;
+    font-size:10px;
+    letter-spacing:1.5px;
+    color:#666;
+}
+
+#connectorPanel label{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin:5px 0;
+    font-size:11px;
+    letter-spacing:0.5px;
+    color:#bbb;
+    cursor:pointer;
+    transition:color 0.2s ease;
+}
+
+#connectorPanel label:hover{
+    color:#fff;
+}
+
+#connectorPanel input{
+    accent-color:#ffffff;
+    cursor:pointer;
+}
+
+#flyToggle{
+    position:absolute;
+    right:20px;
+    top:20px;
+    z-index:20;
+}
+
+#flyToggle button{
+    background:rgba(0,0,0,0.5);
+    color:#999;
+    border:1px solid #555;
+    font-family:Arial,sans-serif;
+    letter-spacing:1px;
+    font-size:11px;
+    padding:8px 14px;
+    cursor:pointer;
+    transition:color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+
+#flyToggle button:hover{
+    color:#ddd;
+    border-color:#999;
+}
+
+#flyToggle button.active{
+    color:#000;
+    background:#fff;
+    border-color:#fff;
+}
+
+.atlas-label{
+    position:absolute;
+    transform:translate(-50%,-100%);
+    font-family:Arial,sans-serif;
+    font-size:11px;
+    letter-spacing:1.5px;
+    color:#ccc;
+    white-space:nowrap;
+    cursor:pointer;
+    pointer-events:auto;
+    transition:opacity 0.5s ease, color 0.2s ease;
+}
+
+.atlas-label:hover{
+    color:#fff;
+}
+
+#tooltip{
+    position:absolute;
+    pointer-events:none;
+
+    font-family:"Courier New", monospace;
+    font-size:14px;
+
+    color:white;
+    background:black;
+
+    padding:4px 8px;
+
+    border:1px solid white;
+
+    display:none;
+
+    z-index:999;
+}
+
+#subLayerTooltip{
+    position:absolute;
+    pointer-events:none;
+
+    font-family:Arial,sans-serif;
+    font-size:11px;
+    line-height:1.5;
+    letter-spacing:0.3px;
+
+    color:#ddd;
+    background:rgba(0,0,0,0.85);
+
+    padding:8px 12px;
+    max-width:260px;
+
+    border:1px solid rgba(255,255,255,0.4);
+
+    display:none;
+
+    z-index:999;
+}
+
+#subLayerTooltip .term{
+    display:block;
+    color:#fff;
+    font-weight:bold;
+    letter-spacing:1px;
+    margin-bottom:4px;
+    font-size:10px;
+}
+
+#backLink{position:fixed;top:16px;left:20px;z-index:10000;color:#fff;text-decoration:none;font-family:'Courier New',Courier,monospace;font-size:14px;letter-spacing:2px;padding:4px 0;opacity:.75;transition:opacity .25s}
+#backLink:hover{opacity:1}
+</style>
+</head>
+
+<body>
+<a id="backLink" href="index.html" title="Back to home">&larr; HOME</a>
+
+<div id="ui">
+<h1>GORMENGHAST</h1>
+<p id="layerName">ATLAS — SEVEN LAYERS</p>
+<p id="layerQuestion" style="font-size:11px;">click a layer to enter it</p>
+<div id="modeToggleWrap"><button id="modeButton">MIND PALACE VIEW</button></div>
+<p id="layerAnalysis"></p>
+<div id="subLayerTabs"></div>
+<div id="invertToggle"><button id="invertButton">INVERT</button></div>
+<div id="connectorPanel">
+<p class="connectorPanelTitle">LAYERS, AS CONNECTORS IN THE PALACE</p>
+</div>
+</div>
+
+<div id="tooltip"></div>
+<div id="subLayerTooltip"></div>
+<div id="flyToggle"><button id="flyButton">FLY MODE (F)</button></div>
+
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+
+<script type="module">
+
+import * as THREE from 'three';
+
+import { OrbitControls }
+from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+import { FlyControls }
+from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/FlyControls.js';
+
+import { EffectComposer }
+from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass }
+from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass }
+from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+
+//////////////////////////////////////////////////
+// ATLAS STACK
+//////////////////////////////////////////////////
+
+const layer1 = new THREE.Group();
+
+scene.add(layer1);
+
+const camera = new THREE.PerspectiveCamera(
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+55000
+);
+
+// ATLAS MODE — default view showing the full exploded stack
+const ATLAS_CAM_POS = new THREE.Vector3(5200, 4200, 7200);
+const ATLAS_CAM_TARGET = new THREE.Vector3(1600, 3000, 0);
+
+camera.position.copy(ATLAS_CAM_POS);
+camera.lookAt(ATLAS_CAM_TARGET);
+
+const renderer = new THREE.WebGLRenderer({
+    
+    
+    antialias:true
+});
+
+renderer.setPixelRatio(window.devicePixelRatio);
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+//////////////////////////////////////////////////
+// POST-PROCESSING — stark black/white contrast
+// crush, closer to the forensic-architecture /
+// architectural-collage reference look, instead
+// of soft faded opacity everywhere
+//////////////////////////////////////////////////
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+
+const contrastPass = new ShaderPass({
+
+    uniforms:{
+        tDiffuse:{ value:null },
+        uCrushLow:{ value:0.10 },
+        uCrushHigh:{ value:0.50 },
+        uKeepGlow:{ value:0.16 } // fraction of the original soft render kept, so points/fog still glow a little instead of going pure flat
+    },
+
+    vertexShader:`
+        varying vec2 vUv;
+        void main(){
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+        }
+    `,
+
+    fragmentShader:`
+        uniform sampler2D tDiffuse;
+        uniform float uCrushLow;
+        uniform float uCrushHigh;
+        uniform float uKeepGlow;
+        varying vec2 vUv;
+
+        void main(){
+
+            vec4 texel = texture2D(tDiffuse, vUv);
+
+            float lum = dot(texel.rgb, vec3(0.299,0.587,0.114));
+
+            float crushed = smoothstep(uCrushLow, uCrushHigh, lum);
+
+            vec3 col = mix(vec3(crushed), texel.rgb, uKeepGlow);
+
+            // subtle vignette — edges read darker, like the reference collage
+            vec2 c = vUv - 0.5;
+            float vig = 1.0 - dot(c,c) * 0.85;
+            col *= vig;
+
+            gl_FragColor = vec4(col, 1.0);
+
+        }
+    `
+
+});
+
+contrastPass.renderToScreen = true;
+composer.addPass(contrastPass);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+const roomHitboxes = [];
+
+//////////////////////////////////////////////////
+// ORBIT CONTROLS
+//////////////////////////////////////////////////
+
+const controls = new OrbitControls(
+    camera,
+    renderer.domElement
+);
+
+controls.enableDamping = true;
+controls.dampingFactor = 0.035;   // lower = longer, softer glide once you let go
+controls.enablePan = true;
+controls.screenSpacePanning = true;
+
+controls.rotateSpeed = 0.35;   // slower rotation so the mouse doesn't feel twitchy
+controls.zoomSpeed = 0.55;
+controls.panSpeed = 0.45;
+
+// free zoom, both directions — no hard cap. The earlier max-out
+// cap (tied to the atlas overview distance) was meant to stop
+// scrolling into empty space, but in practice it reads as the
+// camera getting blocked and yanked back right when zooming in
+// for presentation detail. Freedom to zoom matters more here.
+controls.minDistance = 1;
+controls.maxDistance = 50000;
+
+controls.target.copy(ATLAS_CAM_TARGET);
+
+controls.update();
+
+// the moment the user actually grabs the camera — drag, pan, or
+// scroll-zoom — any automatic fly-to in progress (entering a layer,
+// entering Mind Palace mode, returning to the atlas) must give up
+// immediately. Without this, touching the camera before a big jump
+// finishes settling means the per-frame auto-lerp keeps pulling 6%
+// of the way back toward its target every frame, fighting whatever
+// the user is trying to do — which reads as the view snapping back
+// on its own. Mind Palace's overview jump is the largest distance
+// in the app, so it's the easiest transition to get caught fighting.
+controls.addEventListener("start",()=>{
+    camTransitioning = false;
+});
+
+//////////////////////////////////////////////////
+// FLY MODE — free drone-style navigation. OrbitControls
+// only ever orbits around a fixed point; this lets you
+// actually pilot the camera through the space, dive into
+// a room cluster, thread between structures, no pivot.
+// Off by default; toggled via the FLY MODE button or
+// pressing F, and disables the orbit/click-to-focus system
+// while active so the two don't fight each other.
+//////////////////////////////////////////////////
+
+const flyControls = new FlyControls(camera, renderer.domElement);
+flyControls.movementSpeed = 1000;
+flyControls.rollSpeed = 10;
+flyControls.dragToLook = true;   // only steer while the mouse is held down, so a plain click still works elsewhere
+flyControls.autoForward = false;
+flyControls.enabled = false;
+
+const flyClock = new THREE.Clock();
+let flying = false;
+
+//////////////////////////////////////////////////
+// ROOM GENERATOR
+//////////////////////////////////////////////////
+
+function createRoom(
+name,
+x,y,z,
+w,d,h
+){
+
+const pts=[];
+const step=3;
+
+for(let xx=-w/2;xx<=w/2;xx+=step){
+
+for(let yy=0;yy<=h;yy+=step){
+
+pts.push(
+xx+(Math.random()-0.5)*2,
+yy+(Math.random()-0.5)*2,
+-d/2+(Math.random()-0.5)*2
+);
+
+pts.push(
+xx+(Math.random()-0.5)*2,
+yy+(Math.random()-0.5)*2,
+d/2+(Math.random()-0.5)*2
+);
+
+
+}
+
+}
+
+for(let zz=-d/2;zz<=d/2;zz+=step){
+
+for(let yy=0;yy<=h;yy+=step){
+
+pts.push(
+-w/2+(Math.random()-0.5)*2,
+yy+(Math.random()-0.5)*2,
+zz+(Math.random()-0.5)*2
+);
+
+pts.push(
+w/2+(Math.random()-0.5)*2,
+yy+(Math.random()-0.5)*2,
+zz+(Math.random()-0.5)*2
+);
+
+}
+
+}
+
+for(let xx=-w/2;xx<=w/2;xx+=step){
+
+for(let zz=-d/2;zz<=d/2;zz+=step){
+
+pts.push(
+xx+(Math.random()-0.5)*2,
+0+(Math.random()-0.5)*2,
+zz+(Math.random()-0.5)*2
+);
+
+pts.push(
+xx+(Math.random()-0.5)*2,
+h+(Math.random()-0.5)*2,
+zz+(Math.random()-0.5)*2
+);
+
+}
+
+}
+
+const geo=new THREE.BufferGeometry();
+
+geo.setAttribute(
+'position',
+new THREE.Float32BufferAttribute(
+pts,
+3
+)
+);
+
+const cloud = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({
+        size: 1.3,
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.6,
+        depthWrite: false,
+        depthTest: true,
+
+        sizeAttenuation: true
+    })
+);
+
+cloud.position.set(
+x,
+y,
+z
+);
+
+layer1.add(cloud);
+
+const hitbox = new THREE.Mesh(
+
+    new THREE.BoxGeometry(w,h,d),
+
+    new THREE.MeshBasicMaterial({
+        transparent:true,
+        opacity:0
+    })
+
+);
+
+hitbox.position.set(
+    x,
+    y + h/2,
+    z
+);
+
+hitbox.userData.roomName = name;
+
+layer1.add(hitbox);
+
+roomHitboxes.push(hitbox);
+
+cloud.userData = { roomName: name };
+cloud.userData.hitbox = hitbox;
+
+return cloud;
+
+}
+
+//////////////////////////////////////////////////
+// GORMENGHAST ROOM GRAPH
+//////////////////////////////////////////////////
+
+const rooms = [
+
+// use: how often this space is actually occupied/central to castle
+// life, 1 (barely visited) to 10 (constant, ritual, obsessive use) —
+// this is the value that drives how much a room distorts later:
+// ritual rooms swell and fracture, function rooms stay small and plain
+
+{
+name:"Great Kitchen",
+x:0,y:0,z:0,
+w:600,d:500,h:250,
+use:9
+},
+
+{
+name:"Holding Room",
+x:300,y:80,z:100,
+w:120,d:120,h:90,
+use:2
+},
+
+{
+name:"Castle Roofscape",
+x:650,y:400,z:0,
+w:450,d:450,h:40,
+use:3
+},
+
+{
+name:"Fuchsia Attic",
+x:900,y:700,z:-150,
+w:140,d:140,h:120,
+use:5
+},
+
+{
+name:"Cora Clarice",
+x:1200,y:650,z:150,
+w:180,d:180,h:100,
+use:2
+},
+
+{
+name:"Prunesquallor Study",
+x:1500,y:350,z:0,
+w:220,d:220,h:150,
+use:4
+},
+
+{
+name:"Library",
+x:1900,y:280,z:-250,
+w:500,d:350,h:280,
+use:9
+},
+
+{
+name:"Schoolroom",
+x:2300,y:400,z:0,
+w:260,d:260,h:180,
+use:4
+},
+
+{
+name:"Dead Twins Room",
+x:2700,y:320,z:300,
+w:160,d:160,h:90,
+use:1
+},
+
+{
+name:"Upper Towers",
+x:3100,y:1000,z:0,
+w:220,d:220,h:550,
+use:5
+},
+
+{
+name:"Countess Chamber",
+x:3500,y:1250,z:0,
+w:260,d:260,h:180,
+use:4
+},
+
+//////////////////////////////////////////////////
+// RITUAL DISTRICT
+//////////////////////////////////////////////////
+
+{
+name:"Christening Room",
+x:1800,y:120,z:-900,
+w:200,d:200,h:100,
+use:7
+},
+
+{
+name:"Ancestral Dining Hall",
+x:2200,y:120,z:-900,
+w:420,d:260,h:180,
+use:8
+},
+
+{
+name:"Hall Bright Carvings",
+x:2600,y:200,z:-850,
+w:350,d:200,h:180,
+use:7
+},
+
+{
+name:"Master Ritual",
+x:2100,y:700,z:-1200,
+w:140,d:140,h:140,
+use:10
+},
+
+//////////////////////////////////////////////////
+// EARLING LAKE
+//////////////////////////////////////////////////
+
+{
+name:"Lake",
+x:2600,y:-200,z:1400,
+w:800,d:800,h:20,
+use:3
+}
+
+];
+
+//////////////////////////////////////////////////
+// ROOM LOOKUP — the single source of truth for
+// where things actually are. Other layers (territory
+// fields, steerpike path, etc.) should read positions
+// from here instead of inventing their own coordinates,
+// so everything stacks in alignment.
+//////////////////////////////////////////////////
+
+const roomByName = {};
+rooms.forEach(r=>{ roomByName[r.name] = r; });
+
+// TRUE-3D HELPERS — every layer's flat sheet keeps its own hand-built
+// near-ground y values (that's the exploded axonometric look, and it
+// stays untouched). These three helpers exist only so Mind Palace
+// mode can lift specific, room-tied pieces of that same content up
+// to where they actually belong in real 3D: connectors run between
+// two rooms' real midpoints, per-room glyphs sit on that room's real
+// roof, and a group can be lifted as a whole without touching its
+// own internal coordinates.
+function roomMid(name){ const r = roomByName[name]; return r.y + r.h/2; }
+function roomRoof(name){ const r = roomByName[name]; return r.y + r.h; }
+function elevate(obj,y){
+    const g = new THREE.Group();
+    g.position.y = y;
+    g.add(obj);
+    return g;
+}
+
+// visual-only drift for Mind Palace — the castle's true shape is
+// never fully known, so rooms float away from their "official"
+// position instead of sitting in a confident architectural plan.
+// r.x/r.y/r.z themselves are untouched — every other layer (and
+// the corridor network below, which is the "official route") keeps
+// reading the real canonical coordinates; only the room volume's
+// own rendered position is offset.
+rooms.forEach(r=>{
+    r._scatterX = (Math.random()-0.5)*180;
+    r._scatterY = (Math.random()-0.5)*110;
+    r._scatterZ = (Math.random()-0.5)*180;
+});
+
+// the castle's actual footprint (matches Mind Palace's bounding box) —
+// every other layer uses this same rectangle for its ground plane and
+// click hitbox so the whole stack aligns instead of six unrelated sizes
+const FOOTPRINT = { cx:1750, cz:100, w:4400, d:3200 };
+
+// Steerpike's real route through the castle, in Mind Palace's actual
+// coordinates — Territory Atlas, Steerpike Engine, and Character Atlas
+// all read from this same path instead of each inventing their own
+const steerpikeRoomOrder = [
+    "Great Kitchen",
+    "Holding Room",
+    "Fuchsia Attic",
+    "Prunesquallor Study",
+    "Library",
+    "Castle Roofscape",
+    "Upper Towers"
+];
+
+const steerpikeWaypoints = steerpikeRoomOrder.map(name=>roomByName[name]);
+
+// position at parameter t (0..1) along the real steerpike route,
+// walking the waypoints as straight segments
+function steerpikePointAt(t){
+
+    const n = steerpikeWaypoints.length - 1;
+    const scaled = Math.max(0,Math.min(1,t)) * n;
+    const i = Math.min(n-1, Math.floor(scaled));
+    const localT = scaled - i;
+
+    const a = steerpikeWaypoints[i];
+    const b = steerpikeWaypoints[i+1];
+
+    return {
+        x: a.x + (b.x-a.x)*localT,
+        z: a.z + (b.z-a.z)*localT
+    };
+
+}
+
+//////////////////////////////////////////////////
+// DRAW ROOMS
+//////////////////////////////////////////////////
+
+const roomMeshes = [];
+
+rooms.forEach(r=>{
+
+const room = createRoom(
+    r.name,
+    r.x + r._scatterX,
+    r.y + r._scatterY,
+    r.z + r._scatterZ,
+    r.w,
+    r.d,
+    r.h
+);
+
+room.userData.name = r.name;
+
+// gentle continuous float — phase randomized per room so they
+// don't all drift in sync, amplitude small enough to read as
+// uncertainty rather than motion
+room.userData.floatPhase = Math.random()*Math.PI*2;
+room.userData.floatSpeed = 0.15 + Math.random()*0.15;
+room.userData.floatBase = new THREE.Vector3(
+    r.x + r._scatterX,
+    r.y + r._scatterY,
+    r.z + r._scatterZ
+);
+
+roomMeshes.push(room);
+
+});
+
+//////////////////////////////////////////////////
+// MEMORY NOISE ROOMS
+//////////////////////////////////////////////////
+
+function createGhostRoom(x,y,z,parentRoom){
+
+    const pts=[];      
+    const step=8;      
+
+    const scale =
+        0.4 + Math.random()*1.2;
+
+    const w =
+    parentRoom.w *
+    (0.5 + Math.random()*2.5);
+
+    const d =
+    parentRoom.d *
+    (0.5 + Math.random()*2.5);
+
+    const h =
+    parentRoom.h *
+    (0.4 + Math.random()*3.0);
+
+    // floor
+
+    for(let xx=-w/2;xx<=w/2;xx+=step){
+
+        for(let zz=-d/2;zz<=d/2;zz+=step){
+
+            if(Math.random()<0.15){
+
+                pts.push(xx,0,zz);
+
+            }
+
+        }
+
+    }
+
+    // walls
+
+    for(let yy=0;yy<=h;yy+=step){
+
+        for(let xx=-w/2;xx<=w/2;xx+=step){
+
+           if(Math.random()>0.3)
+                pts.push(xx,yy,-d/2);
+
+            if(Math.random()>0.3)
+                pts.push(xx,yy,d/2);
+
+        }
+
+        for(let zz=-d/2;zz<=d/2;zz+=step){
+
+            if(Math.random()>0.3)
+                pts.push(-w/2,yy,zz);
+
+            if(Math.random()>0.3)
+                pts.push(w/2,yy,zz);
+
+        }
+
+    }
+
+    // random missing wall sections
+
+    pts.splice(
+        Math.floor(Math.random()*pts.length*0.4),
+        Math.floor(pts.length*0.25)
+    );
+
+    const geo =
+    new THREE.BufferGeometry();
+
+    geo.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(
+            pts,
+            3
+        )
+    );
+
+    const cloud =
+    new THREE.Points(
+
+        geo,
+
+        new THREE.PointsMaterial({
+
+            size:1,
+
+            color:0xffffff,
+
+            transparent:true,
+
+            opacity:0.06,
+
+            depthWrite:false
+
+        })
+
+    );
+
+   // const ghostOpacity =
+   // 0.02 + Math.random()*0.08;
+      //  new THREE.PointsMaterial({
+
+   // size:1,
+
+   // color:0xffffff,
+
+   // transparent:true,
+
+    //opacity:ghostOpacity,
+
+   // depthWrite:false
+
+//});
+
+const corners = [
+
+[-w/2,0,-d/2],
+[w/2,0,-d/2],
+[-w/2,0,d/2],
+[w/2,0,d/2],
+
+[-w/2,h,-d/2],
+[w/2,h,-d/2],
+[-w/2,h,d/2],
+[w/2,h,d/2]
+
+];
+
+corners.forEach(c=>{
+
+    for(let i=0;i<150;i++){
+
+        pts.push(
+            c[0] + (Math.random()-0.5)*6,
+            c[1] + (Math.random()-0.5)*6,
+            c[2] + (Math.random()-0.5)*6
+        );
+
+    }
+
+});
+
+    cloud.position.set(x,y,z);
+
+    cloud.rotation.y =
+        Math.random()*Math.PI*2;
+
+    layer1.add(cloud);
+
+}
+
+rooms.forEach(core=>{
+
+    const clusterCount = 40;
+
+    for(let i=0;i<clusterCount;i++){
+
+        const angle =
+            Math.random()*Math.PI*2;
+
+        const radius =
+           400 + Math.pow(Math.random(),0.5)*2500;
+
+        createGhostRoom(
+    core.x + Math.cos(angle)*radius,
+    core.y + (Math.random()-0.5)*150,
+    core.z + Math.sin(angle)*radius,
+    core
+);
+
+    }
+
+});
+
+//////////////////////////////////////////////////
+// GRAND HALL
+//////////////////////////////////////////////////
+
+const crossroads = {
+
+    x:1400,
+    y:250,
+    z:400,
+
+    w:500,
+    d:500,
+    h:250
+
+};
+
+createRoom(
+    "Grand Ritual Hall",
+    crossroads.x,
+    crossroads.y,
+    crossroads.z,
+    crossroads.w,
+    crossroads.d,
+    crossroads.h
+);
+
+//////////////////////////////////////////////////
+// CONNECTIONS
+//////////////////////////////////////////////////
+
+const lineMat =
+new THREE.LineBasicMaterial({
+
+color:0xffffff,
+transparent:true,
+opacity:0.12
+
+});
+
+function connect(a,b){
+
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dz = b.z - a.z;
+
+    const length = Math.sqrt(
+        dx*dx +
+        dy*dy +
+        dz*dz
+    );
+
+    const corridorGeo =
+        new THREE.BoxGeometry(
+            25,      // width
+            25,      // height
+            length
+        );
+
+    const edges =
+        new THREE.EdgesGeometry(
+            corridorGeo
+        );
+
+    const corridor =
+        new THREE.LineSegments(
+            edges,
+            new THREE.LineBasicMaterial({
+                color:0xffffff,
+                transparent:true,
+                opacity:0.12
+            })
+        );
+
+    corridor.position.set(
+        (a.x+b.x)/2,
+        (a.y+b.y)/2,
+        (a.z+b.z)/2
+    );
+
+    corridor.lookAt(
+        b.x,
+        b.y,
+        b.z
+    );
+
+    corridor.rotateX(
+        Math.PI/2
+    );
+
+    layer1.add(corridor);
+
+}
+
+function createCorridor(a,b){
+
+    const pts=[];
+
+    const width = 18;
+
+    for(let i=0;i<700;i++){
+
+        const t=Math.random();
+
+        pts.push(
+
+            THREE.MathUtils.lerp(a.x,b.x,t)
+            +(Math.random()-0.5)*width,
+
+            THREE.MathUtils.lerp(a.y,b.y,t)
+            +(Math.random()-0.5)*width,
+
+            THREE.MathUtils.lerp(a.z,b.z,t)
+            +(Math.random()-0.5)*width
+
+        );
+
+    }
+
+    const geo=
+        new THREE.BufferGeometry();
+
+    geo.setAttribute(
+        'position',
+        new THREE.Float32BufferAttribute(
+            pts,
+            3
+        )
+    );
+
+    const cloud=
+        new THREE.Points(
+
+            geo,
+
+            new THREE.PointsMaterial({
+
+                size:1.2,
+                color:0xffffff,
+                transparent:true,
+                opacity:0.18
+
+            })
+
+        );
+
+    layer1.add(cloud);
+
+return cloud;
+
+}
+
+
+//////////////////////////////////////////////////
+// STEERPIKE ASCENT
+//////////////////////////////////////////////////
+
+createCorridor(rooms[0],rooms[1]);
+createCorridor(rooms[1],rooms[2]);
+createCorridor(rooms[2],rooms[3]);
+createCorridor(rooms[3],rooms[4]);
+createCorridor(rooms[4],rooms[5]);
+createCorridor(rooms[5],rooms[6]);
+createCorridor(rooms[6],rooms[7]);
+createCorridor(rooms[7],rooms[8]);
+createCorridor(rooms[8],rooms[9]);
+createCorridor(rooms[9],rooms[10]);
+
+//////////////////////////////////////////////////
+// GRAND HALL CONNECTIONS
+//////////////////////////////////////////////////
+
+createCorridor(crossroads, rooms[0]);   // Great Kitchen
+
+createCorridor(crossroads, rooms[6]);   // Library
+
+createCorridor(crossroads, rooms[12]);  // Ancestral Dining Hall
+
+createCorridor(crossroads, rooms[9]);   // Upper Towers
+
+createCorridor(crossroads, rooms[14]);  // Lake
+
+//////////////////////////////////////////////////
+// CORRIDOR NETWORK — STAR CHART TREATMENT
+// same five real hub connections above, rendered as
+// radiating labeled sightlines converging on the hub —
+// this is 1.4 (spatial connectivity), not new data
+//////////////////////////////////////////////////
+
+function addSightline(hub,target){
+
+    const dir = new THREE.Vector3(target.x-hub.x, target.y-hub.y, target.z-hub.z);
+    dir.normalize();
+
+    const geo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(hub.x,hub.y,hub.z),
+        new THREE.Vector3(target.x,target.y,target.z)
+    ]);
+
+    layer1.add(new THREE.Line(geo, new THREE.LineBasicMaterial({
+        color:0xffffff, transparent:true, opacity:0.45
+    })));
+
+    // small arrowhead near the target, like the star chart's rays
+    const arrowLen = 40;
+    const back = new THREE.Vector3(target.x,target.y,target.z).addScaledVector(dir,-arrowLen);
+
+    let perp = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0));
+    if(perp.lengthSq() < 0.0001) perp.set(1,0,0);
+    perp.normalize().multiplyScalar(14);
+
+    const wingA = back.clone().add(perp);
+    const wingB = back.clone().sub(perp);
+
+    const arrowGeo = new THREE.BufferGeometry().setFromPoints([
+        wingA, new THREE.Vector3(target.x,target.y,target.z), wingB
+    ]);
+
+    layer1.add(new THREE.Line(arrowGeo, new THREE.LineBasicMaterial({
+        color:0xffffff, transparent:true, opacity:0.6
+    })));
+
+}
+
+addSightline(crossroads, rooms[0]);
+addSightline(crossroads, rooms[6]);
+addSightline(crossroads, rooms[12]);
+addSightline(crossroads, rooms[9]);
+addSightline(crossroads, rooms[14]);
+
+//////////////////////////////////////////////////
+// RITUAL NETWORK
+//////////////////////////////////////////////////
+
+createCorridor(rooms[6],rooms[11]);
+createCorridor(rooms[11],rooms[12]);
+createCorridor(rooms[12],rooms[13]);
+createCorridor(rooms[13],rooms[14]);
+
+//////////////////////////////////////////////////
+// ROOFSCAPE CONNECTION
+//////////////////////////////////////////////////
+
+createCorridor(rooms[2],rooms[9]);
+
+//////////////////////////////////////////////////
+// LIBRARY GRAVITY FIELD
+//////////////////////////////////////////////////
+
+for(let i=0;i<30;i++){
+
+const geo =
+new THREE.BufferGeometry().setFromPoints([
+
+new THREE.Vector3(
+1900,
+400,
+-250
+),
+
+new THREE.Vector3(
+
+1900+(Math.random()-0.5)*1200,
+
+400+(Math.random()-0.5)*900,
+
+-250+(Math.random()-0.5)*1200
+
+)
+
+]);
+
+layer1.add(
+new THREE.Line(
+geo,
+new THREE.LineBasicMaterial({
+
+color:0xffffff,
+transparent:true,
+opacity:0.025
+
+})
+)
+);
+
+}
+
+
+
+//////////////////////////////////////////////////
+// DUST
+//////////////////////////////////////////////////
+
+const dust=[];
+
+for(let i=0;i<25000;i++){
+
+dust.push(
+
+(Math.random()-0.5)*6000,
+(Math.random()-0.5)*3000,
+(Math.random()-0.5)*6000
+
+);
+
+}
+
+const dustGeo=
+new THREE.BufferGeometry();
+
+dustGeo.setAttribute(
+'position',
+new THREE.Float32BufferAttribute(
+dust,
+3
+)
+);
+
+const dustField=
+new THREE.Points(
+
+dustGeo,
+
+new THREE.PointsMaterial({
+
+size:0.08,
+color:0xffffff,
+transparent:true,
+opacity:0.008
+
+})
+
+);
+
+layer1.add(
+dustField
+);
+
+//////////////////////////////////////////////////
+// RITUAL DISTORTION
+// rituals override function: a room's fracture/burst
+// amount is driven directly by its own use value —
+// rooms of constant ritual/obsessive use (Master Ritual,
+// Great Kitchen, Library, Ancestral Dining Hall, the
+// ritual district) swell and fracture outward from their
+// own real footprint. purely functional, occasionally-
+// used rooms (Holding Room, Dead Twins Room, Schoolroom,
+// the Lake) get none of this and stay plain wireframe.
+//////////////////////////////////////////////////
+
+function shardMaterial(){
+    return new THREE.MeshBasicMaterial({
+        color:0x000000,
+        side:THREE.DoubleSide,
+        transparent:true,
+        opacity:1
+    });
+}
+
+function addShard(cx,cy,cz,size,angle,tilt){
+
+    // an irregular elongated triangle, not a clean primitive —
+    // random-ish offsets keep every shard a slightly different shape
+    const a = new THREE.Vector3(0,0,0);
+    const b = new THREE.Vector3(size*(0.7+Math.random()*0.6), size*(0.15+Math.random()*0.3), 0);
+    const c = new THREE.Vector3(size*(0.15+Math.random()*0.35), -size*(0.9+Math.random()*0.8), 0);
+
+    const geo = new THREE.BufferGeometry().setFromPoints([a,b,c]);
+    geo.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geo, shardMaterial());
+    mesh.position.set(cx,cy,cz);
+    mesh.rotation.z = angle;
+    mesh.rotation.y = tilt;
+
+    layer1.add(mesh);
+
+    const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geo),
+        new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.35 })
+    );
+    edges.position.copy(mesh.position);
+    edges.rotation.copy(mesh.rotation);
+
+    layer1.add(edges);
+
+}
+
+// only rooms used this heavily distort at all — this is the line
+// between "ritual" and "function" for this layer
+const RITUAL_THRESHOLD = 6;
+
+rooms.forEach(r=>{
+
+    if(r.use < RITUAL_THRESHOLD) return;
+
+    // how far past the threshold this room's use goes —
+    // this single number drives shard count, size, and spread
+    const weight = r.use - RITUAL_THRESHOLD;
+
+    const shardCount = 3 + weight*2;
+    const shardSize = 120 + weight*45;
+    const spread = Math.max(r.w,r.d) * 0.6;
+
+    for(let i=0;i<shardCount;i++){
+
+        addShard(
+            r.x + r._scatterX + (Math.random()-0.5)*spread,
+            r.y + r._scatterY + Math.random()*r.h*1.4,
+            r.z + r._scatterZ + (Math.random()-0.5)*spread,
+            shardSize * (0.7+Math.random()*0.6),
+            Math.random()*Math.PI*2,
+            (Math.random()-0.5)*0.6
+        );
+
+    }
+
+});
+
+
+//////////////////////////////////////////////////
+
+const tooltip =
+document.getElementById("tooltip");
+
+
+window.addEventListener(
+"mousemove",
+(event)=>{
+
+mouse.x =
+(event.clientX /
+window.innerWidth) * 2 - 1;
+
+mouse.y =
+-(event.clientY /
+window.innerHeight) * 2 + 1;
+
+raycaster.setFromCamera(
+mouse,
+camera
+);
+
+const hits =
+raycaster.intersectObjects(
+roomMeshes
+);
+
+if(hits.length){
+
+tooltip.style.display =
+"block";
+
+tooltip.innerHTML =
+hits[0].object.userData.name;
+
+tooltip.style.left =
+(event.clientX + 15) + "px";
+
+tooltip.style.top =
+(event.clientY + 15) + "px";
+
+}else{
+
+tooltip.style.display =
+"none";
+
+}
+
+});
+
+//////////////////////////////////////////////////
+// ANIMATE
+//////////////////////////////////////////////////
+
+function animate(){
+
+    requestAnimationFrame(animate);
+
+    controls.update();
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+//////////////////////////////////////////////////
+// LAYER 2.1 — TERRITORY ATLAS
+//////////////////////////////////////////////////
+
+const territorySheet = new THREE.Group();
+territorySheet.position.y = 1000;
+scene.add(territorySheet);
+
+// footprint matched exactly to Mind Palace's own bounding box
+// (center 1750,100 · 4400 x 3200) so the two layers actually
+// stack in alignment instead of drifting to unrelated coordinates
+const bg = new THREE.Mesh(
+
+    new THREE.PlaneGeometry(4400,3200),
+
+    new THREE.MeshBasicMaterial({
+
+        color:0xffffff,
+        transparent:true,
+        opacity:0.05,
+        side:THREE.DoubleSide
+
+    })
+
+);
+
+bg.rotation.x = -Math.PI/2;
+bg.position.set(1750,0,100);
+
+territorySheet.add(bg);
+
+//////////////////////////////////////////////////
+// TERRITORY, THROUGH STEERPIKE'S OWN VOCABULARY
+// Not four behavioral fields — Steerpike doesn't read the
+// castle as continuous territory, he reads it as discrete
+// pieces stuck, tied, and folded together. This layer is
+// built entirely from his own spatial vocabulary, applied
+// to the castle's actual weak points: the rooms nobody
+// watches closely (the same low-use rooms that stayed
+// plain and undistorted in Mind Palace — what's boring to
+// the castle's official self-understanding is exactly
+// what's exploitable to him).
+//////////////////////////////////////////////////
+
+// WEAK POINTS — same threshold logic as Mind Palace's ritual
+// distortion, read in reverse: rooms that never distorted there
+// (use <= 4, low ritual/authority attention) are Steerpike's
+// opportunities here
+const weakPoints = rooms.filter(r => r.use <= 4);
+
+// FOLD / CREASE / POCKET / WRAP / VEIL / PEEL / COMPRESSION —
+// one glyph per weak point: stacked irregular layers, not a flat
+// shape. Layer count and size scale with how little attention the
+// room gets — fewer eyes, more concealment depth. The innermost
+// layer is lifted and offset from the rest: Peel, access to what's
+// underneath. A crease line runs through alternating layers:
+// latent possibility, not yet used.
+function weakPointGlyph(room){
+
+    // FOLD, as a cascade — attention that should be falling on
+    // this room but isn't, thinning as it drops, then pooling
+    // into a splash exactly where the room actually sits. More
+    // overlooked (lower use) → taller cascade, more streams,
+    // bigger pool. Same hiddenness value as before, new shape.
+    const group = new THREE.Group();
+
+    const hiddenness = 5 - room.use; // 1..4 across our weak points
+    const cascadeHeight = 130 + hiddenness*75;
+    const streamCount = 6 + hiddenness*3;
+
+    for(let s=0;s<streamCount;s++){
+
+        const offsetX = (Math.random()-0.5)*46;
+        const offsetZ = (Math.random()-0.5)*46;
+        const topY = cascadeHeight * (0.6+Math.random()*0.4);
+        const steps = 28;
+        const pts = [];
+
+        for(let i=0;i<=steps;i++){
+
+            const t = i/steps; // 0 at top, 1 at the room itself
+            const y = topY * (1-t);
+
+            // turbulence builds toward the base — the splash where
+            // neglect actually lands, not a clean straight drop
+            const turbulence = t*t*14;
+            const x = room.x + offsetX + (Math.random()-0.5)*turbulence;
+            const z = room.z + offsetZ + (Math.random()-0.5)*turbulence;
+
+            pts.push(x,y,z);
+
+        }
+
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(pts,3));
+
+        group.add(new THREE.Line(
+            geo,
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.13+Math.random()*0.13 })
+        ));
+
+    }
+
+    // the pool at the base — accumulated, sitting exactly where
+    // the room is, not spread evenly around it
+    const poolPts=[];
+    const poolCount = 220 + hiddenness*130;
+    const poolRadius = 20 + hiddenness*9;
+
+    for(let i=0;i<poolCount;i++){
+        const r = Math.pow(Math.random(),1.8)*poolRadius;
+        const a = Math.random()*Math.PI*2;
+        poolPts.push(room.x+Math.cos(a)*r, Math.random()*3, room.z+Math.sin(a)*r);
+    }
+
+    const poolGeo = new THREE.BufferGeometry();
+    poolGeo.setAttribute('position', new THREE.Float32BufferAttribute(poolPts,3));
+    group.add(new THREE.Points(poolGeo, new THREE.PointsMaterial({
+        size:1.6, color:0xffffff, transparent:true, opacity:0.5
+    })));
+
+    return group;
+
+}
+
+// three named sub-groups, one per selectable tab — Fold-family
+// (concealment glyphs), Attachment-family (the 8 connections),
+// and X-Ray (sightlines to Master Ritual)
+const territoryFold = new THREE.Group();
+const territoryAttach = new THREE.Group();
+const territoryXray = new THREE.Group();
+territorySheet.add(territoryFold, territoryAttach, territoryXray);
+
+weakPoints.forEach(room=>{ territoryFold.add(weakPointGlyph(room)); });
+
+// AMBIENT RAIN — the same falling-attention logic scattered
+// faintly across the whole footprint, not just at weak points.
+// Without this, the 8 cascades read as isolated columns in empty
+// space; with it, they're concentrations within a field that's
+// already falling everywhere — a full composition, not eight dots
+for(let i=0;i<240;i++){
+
+    const rx = FOOTPRINT.cx + (Math.random()-0.5)*FOOTPRINT.w;
+    const rz = FOOTPRINT.cz + (Math.random()-0.5)*FOOTPRINT.d;
+    const topY = 30 + Math.random()*160;
+    const pts=[];
+
+    for(let s=0;s<=8;s++){
+        const t = s/8;
+        pts.push(new THREE.Vector3(rx+(Math.random()-0.5)*3, topY*(1-t), rz+(Math.random()-0.5)*3));
+    }
+
+    territoryFold.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.04+Math.random()*0.05 })
+    ));
+
+}
+
+// CLIP / TAPE / THREAD / PIN / HOOK / TIE / SUSPEND / PATCH —
+// connections between weak points, each an improvised attachment
+// rather than a structural corridor: this is Steerpike seeing
+// space as relationship, pieces held together rather than a
+// continuous field
+function buildConnection(a,b,style,y1,y2){
+
+    if(y1===undefined) y1=4;
+    if(y2===undefined) y2=4;
+
+    const group = new THREE.Group();
+    const p1 = new THREE.Vector3(a.x, y1, a.z);
+    const p2 = new THREE.Vector3(b.x, y2, b.z);
+    const mid = p1.clone().lerp(p2, 0.5);
+    const dir = new THREE.Vector3().subVectors(p2,p1).normalize();
+    const perp = new THREE.Vector3(-dir.z, 0, dir.x);
+
+    if(style==="thread"){
+
+        // thin wavering line — temporary connection
+        const pts=[];
+        for(let i=0;i<=20;i++){
+            const t=i/20;
+            const base = new THREE.Vector3().lerpVectors(p1,p2,t);
+            base.addScaledVector(perp, Math.sin(t*Math.PI*6)*4);
+            pts.push(base);
+        }
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(pts),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.22 })
+        ));
+
+    }else if(style==="tie"){
+
+        // straight line + a knot loop at the midpoint —
+        // provisional relationship, tied rather than built
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([p1,p2]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.3 })
+        ));
+        const loopPts=[];
+        for(let a2=0;a2<=Math.PI*2+0.1;a2+=0.2){
+            loopPts.push(new THREE.Vector3(mid.x+Math.cos(a2)*8, mid.y, mid.z+Math.sin(a2)*8));
+        }
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(loopPts),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.4 })
+        ));
+
+    }else if(style==="pin"){
+
+        // straight line + a small X — momentary fixation
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([p1,p2]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.2 })
+        ));
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(mid.x-7,mid.y,mid.z-7),
+                new THREE.Vector3(mid.x+7,mid.y,mid.z+7)
+            ]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.5 })
+        ));
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(mid.x-7,mid.y,mid.z+7),
+                new THREE.Vector3(mid.x+7,mid.y,mid.z-7)
+            ]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.5 })
+        ));
+
+    }else if(style==="hook"){
+
+        // curved, asymmetric, curling sharply near the far end —
+        // opportunistic access, reaching in rather than meeting
+        const bow = mid.clone().addScaledVector(perp, 20);
+        const curve = new THREE.QuadraticBezierCurve3(p1,bow,p2);
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(curve.getPoints(24)),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.28 })
+        ));
+        const curlPts=[];
+        for(let a2=0;a2<=Math.PI*1.4;a2+=0.15){
+            curlPts.push(new THREE.Vector3(p2.x+Math.cos(a2)*6, p2.y, p2.z+Math.sin(a2)*6));
+        }
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(curlPts),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.45 })
+        ));
+
+    }else if(style==="clip"){
+
+        // straight line + perpendicular bracket ticks at each end —
+        // temporary attachment, not structural
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([p1,p2]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.22 })
+        ));
+        const tick = perp.clone().multiplyScalar(9);
+        [p1,p2].forEach(p=>{
+            group.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([p.clone().add(tick), p.clone().sub(tick)]),
+                new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.4 })
+            ));
+        });
+
+    }else if(style==="tape"){
+
+        // two parallel strips overlapping the midpoint —
+        // temporary occupation, stuck on rather than built in
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([p1,p2]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.18 })
+        ));
+        const off = perp.clone().multiplyScalar(5);
+        const seg = dir.clone().multiplyScalar(22);
+        [off.clone(), off.clone().negate()].forEach(o=>{
+            group.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([
+                    mid.clone().add(o).sub(seg), mid.clone().add(o).add(seg)
+                ]),
+                new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.4 })
+            ));
+        });
+
+    }else if(style==="suspend"){
+
+        // dashed, fading out before it fully resolves —
+        // not fully resolved
+        for(let i=0;i<14;i+=2){
+            const t1=i/14, t2=Math.min(0.75,(i+1)/14);
+            if(t1>0.75) break;
+            group.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3().lerpVectors(p1,p2,t1),
+                    new THREE.Vector3().lerpVectors(p1,p2,t2)
+                ]),
+                new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.3*(1-t1) })
+            ));
+        }
+
+    }else if(style==="patch"){
+
+        // straight line + a small irregular quad overlaid at the
+        // midpoint — improvised adaptation, not seamless
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([p1,p2]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.2 })
+        ));
+        const s=10;
+        const patchPts=[
+            mid.clone().add(new THREE.Vector3(-s+Math.random()*3,0,-s)),
+            mid.clone().add(new THREE.Vector3(s,0,-s+Math.random()*3)),
+            mid.clone().add(new THREE.Vector3(s-Math.random()*3,0,s)),
+            mid.clone().add(new THREE.Vector3(-s,0,s-Math.random()*3))
+        ];
+        group.add(new THREE.LineLoop(
+            new THREE.BufferGeometry().setFromPoints(patchPts),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.45 })
+        ));
+
+    }
+
+    return group;
+
+}
+
+// nearest-neighbor graph among weak points only — pieces stuck
+// together, not a continuous mesh
+const weakEdges = [];
+
+weakPoints.forEach((r,i)=>{
+
+    let nearest=null, nearestDist=Infinity;
+
+    weakPoints.forEach((other,j)=>{
+        if(i===j) return;
+        const d = Math.hypot(r.x-other.x, r.z-other.z);
+        if(d<nearestDist){ nearestDist=d; nearest=other; }
+    });
+
+    if(nearest){
+        const key = [r.name,nearest.name].sort().join("|");
+        if(!weakEdges.find(e=>e.key===key)) weakEdges.push({ key, a:r, b:nearest });
+    }
+
+});
+
+const CONNECTION_STYLES = ["clip","tape","thread","pin","hook","tie","suspend","patch"];
+
+weakEdges.forEach((e,i)=>{
+    territoryAttach.add(buildConnection(e.a, e.b, CONNECTION_STYLES[i % CONNECTION_STYLES.length]));
+});
+
+// dangling threads — minor, unresolved attachments at every weak
+// point, not just the 8 real connections. Suspend/stop: not fully
+// resolved. Fills the layer out instead of leaving it as eight
+// isolated links floating in empty space.
+weakPoints.forEach(room=>{
+
+    const count = 5 + Math.floor(Math.random()*4);
+
+    for(let i=0;i<count;i++){
+
+        const a = Math.random()*Math.PI*2;
+        const len = 40 + Math.random()*90;
+        const bend = new THREE.Vector3(
+            room.x + Math.cos(a)*len*0.6 + (Math.random()-0.5)*20,
+            2,
+            room.z + Math.sin(a)*len*0.6 + (Math.random()-0.5)*20
+        );
+        const end = new THREE.Vector3(
+            room.x + Math.cos(a)*len,
+            2,
+            room.z + Math.sin(a)*len
+        );
+
+        territoryAttach.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(room.x,2,room.z), bend, end
+            ]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.08+Math.random()*0.1 })
+        ));
+
+    }
+
+});
+
+// X-RAY — seeing beyond surfaces: a faint dashed sightline from
+// every weak point toward Master Ritual, the true source of
+// authority. Not a route he walks — a line of sight, what a
+// weak point lets him see toward, if not yet reach
+const authorityRoom = roomByName["Master Ritual"];
+
+weakPoints.forEach(room=>{
+
+    for(let i=0;i<10;i+=2){
+
+        const t1=i/10, t2=(i+1)/10;
+
+        territoryXray.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3().lerpVectors(
+                    new THREE.Vector3(room.x,2,room.z),
+                    new THREE.Vector3(authorityRoom.x,2,authorityRoom.z), t1
+                ),
+                new THREE.Vector3().lerpVectors(
+                    new THREE.Vector3(room.x,2,room.z),
+                    new THREE.Vector3(authorityRoom.x,2,authorityRoom.z), t2
+                )
+            ]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.1 })
+        ));
+
+    }
+
+});
+
+// scan-line grid across the whole footprint — X-ray seeing
+// through the surface everywhere, not just along the 8 real
+// sightlines, which stay the bright, deliberate lines within it
+for(let z = FOOTPRINT.cz - FOOTPRINT.d/2; z < FOOTPRINT.cz + FOOTPRINT.d/2; z += 90){
+    territoryXray.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(FOOTPRINT.cx - FOOTPRINT.w/2, 0.5, z),
+            new THREE.Vector3(FOOTPRINT.cx + FOOTPRINT.w/2, 0.5, z)
+        ]),
+        new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.025 })
+    ));
+}
+
+// tick marks along each real sightline, like a measurement scale
+weakPoints.forEach(room=>{
+
+    const a = new THREE.Vector3(room.x,2,room.z);
+    const b = new THREE.Vector3(authorityRoom.x,2,authorityRoom.z);
+    const dir = new THREE.Vector3().subVectors(b,a).normalize();
+    const perp = new THREE.Vector3(-dir.z,0,dir.x).multiplyScalar(5);
+
+    for(let t=0.1;t<1;t+=0.15){
+        const p = new THREE.Vector3().lerpVectors(a,b,t);
+        territoryXray.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([p.clone().add(perp), p.clone().sub(perp)]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.12 })
+        ));
+    }
+
+});
+
+//////////////////////////////////////////////////
+// LABELS
+//////////////////////////////////////////////////
+
+function makeLabel(text,x,z){
+
+    const div=document.createElement('div');
+
+    div.style.position='absolute';
+    div.style.color='white';
+    div.style.fontFamily='Arial';
+    div.style.fontSize='11px';
+    div.style.opacity='0.8';
+    div.innerText=text;
+
+    document.body.appendChild(div);
+
+    return {
+
+        div,
+        pos:new THREE.Vector3(x,0,z)
+
+    };
+
+}
+
+// one label, at the point everything else reaches toward —
+// the weak points themselves stay unlabeled, read only through
+// their glyphs and connections, same as Mind Palace's hover-only
+// philosophy applied here as "no labels except the one fixed thing"
+const labels=[
+    makeLabel('MASTER RITUAL · what every weak point sees toward', authorityRoom.x, authorityRoom.z)
+];
+
+
+function updateLabels(){
+
+    labels.forEach(l=>{
+
+        const p=l.pos.clone();
+
+        territorySheet.localToWorld(p);
+
+        p.project(camera);
+
+        l.div.style.left=
+        ((p.x*0.5+0.5)*window.innerWidth)+'px';
+
+        l.div.style.top=
+        ((-p.y*0.5+0.5)*window.innerHeight)+'px';
+
+    });
+
+}
+
+//////////////////////////////////////////////////
+// LAYER 2.2 SOCIAL ORDER
+//////////////////////////////////////////////////
+
+const socialLayer=new THREE.Group();
+socialLayer.position.y = 2000;
+scene.add(socialLayer);
+
+// each character positioned at the room they're actually tied to
+// in Mind Palace, not an arbitrary layout — so Social Order spreads
+// across the real castle footprint instead of clustering near origin
+const characters=[
+
+["Sepulchrave", roomByName["Library"].x, roomByName["Library"].z, 20, "Library"],
+["Steerpike",   roomByName["Great Kitchen"].x + 90, roomByName["Great Kitchen"].z - 60, 18, "Great Kitchen"],
+["Fuchsia",     roomByName["Fuchsia Attic"].x, roomByName["Fuchsia Attic"].z, 10, "Fuchsia Attic"],
+["Gertrude",    roomByName["Lake"].x, roomByName["Lake"].z, 12, "Lake"],
+["Flay",        roomByName["Master Ritual"].x, roomByName["Master Ritual"].z, 8, "Master Ritual"],
+["Swelter",     roomByName["Great Kitchen"].x - 90, roomByName["Great Kitchen"].z + 60, 8, "Great Kitchen"],
+["Prunesquallor", roomByName["Prunesquallor Study"].x, roomByName["Prunesquallor Study"].z, 9, "Prunesquallor Study"]
+
+];
+
+const nodeByName = {};
+
+// fractured backdrop — irregular torn-edge shard fragments scattered
+// behind the network, so the layer reads as a forensic diagram on a
+// broken surface rather than dots floating in empty space
+function shardField(cx,cz,w,d,count){
+
+    const group = new THREE.Group();
+
+    for(let i=0;i<count;i++){
+
+        const px = cx + (Math.random()-0.5)*w;
+        const pz = cz + (Math.random()-0.5)*d;
+        const size = 40 + Math.random()*170;
+        const rot = Math.random()*Math.PI*2;
+
+        const p1 = new THREE.Vector3(0,0,0);
+        const p2 = new THREE.Vector3(Math.cos(rot)*size, 0, Math.sin(rot)*size);
+        const a3 = rot + 0.7 + Math.random()*1.6;
+        const p3 = new THREE.Vector3(
+            Math.cos(a3)*size*(0.4+Math.random()*0.6),
+            0,
+            Math.sin(a3)*size*(0.4+Math.random()*0.6)
+        );
+
+        const geo = new THREE.BufferGeometry().setFromPoints([p1,p2,p3,p1]);
+
+        const mat = new THREE.LineBasicMaterial({
+            color:0xffffff,
+            transparent:true,
+            opacity:0.05 + Math.random()*0.10
+        });
+
+        const shard = new THREE.Line(geo,mat);
+        shard.position.set(px,-2,pz);
+
+        group.add(shard);
+
+    }
+
+    return group;
+
+}
+
+// concentric halo rings around a node — the gravity-well /
+// lens-flare reading instead of a flat network-diagram dot
+function haloRings(cx,cz,baseR){
+
+    const group = new THREE.Group();
+
+    [1.6,2.4,3.4].forEach((mult,i)=>{
+
+        const pts=[];
+
+        for(let a=0;a<=Math.PI*2+0.05;a+=0.08){
+            pts.push(new THREE.Vector3(cx+Math.cos(a)*baseR*mult,0,cz+Math.sin(a)*baseR*mult));
+        }
+
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+
+        const mat = new THREE.LineBasicMaterial({
+            color:0xffffff,
+            transparent:true,
+            opacity:0.14/(i+1)
+        });
+
+        group.add(new THREE.Line(geo,mat));
+
+    });
+
+    return group;
+
+}
+
+// radiating shard-burst — jagged rays fanning out from a node,
+// used on the two figures whose power is actively in motion
+function burst(cx,cz,count,minLen,maxLen,color,baseOpacity){
+
+    const group = new THREE.Group();
+
+    for(let i=0;i<count;i++){
+
+        const angle = Math.random()*Math.PI*2;
+        const len = minLen + Math.random()*(maxLen-minLen);
+        const x2 = cx + Math.cos(angle)*len;
+        const z2 = cz + Math.sin(angle)*len;
+
+        const geo = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(cx,0,cz),
+            new THREE.Vector3(x2,0,z2)
+        ]);
+
+        const mat = new THREE.LineBasicMaterial({
+            color,
+            transparent:true,
+            opacity: baseOpacity*(0.3+Math.random()*0.7)
+        });
+
+        group.add(new THREE.Line(geo,mat));
+
+    }
+
+    return group;
+
+}
+
+// a straight relationship line — solid for authority, dashed for
+// manipulation, faint for duty
+function relLine(p1,p2,color,opacity,dashed){
+
+    const geo = new THREE.BufferGeometry().setFromPoints([p1,p2]);
+
+    const mat = dashed ?
+        new THREE.LineDashedMaterial({color,transparent:true,opacity,dashSize:14,gapSize:9}) :
+        new THREE.LineBasicMaterial({color,transparent:true,opacity});
+
+    const line = new THREE.Line(geo,mat);
+
+    if(dashed) line.computeLineDistances();
+
+    return line;
+
+}
+
+// a relationship routed like a circuit trace — right-angle bend
+// instead of a straight line, with small via pads at each joint.
+// this is for the formal channels (authority/duty/manipulation):
+// power in Gormenghast runs through fixed routes, not straight lines
+function pcbTrace(p1,p2,color,opacity,dashed){
+
+    const group = new THREE.Group();
+    const bend = new THREE.Vector3(p2.x, p1.y, p1.z);
+
+    const geo = new THREE.BufferGeometry().setFromPoints([p1,bend,p2]);
+
+    const mat = dashed ?
+        new THREE.LineDashedMaterial({color,transparent:true,opacity,dashSize:14,gapSize:9}) :
+        new THREE.LineBasicMaterial({color,transparent:true,opacity});
+
+    const line = new THREE.Line(geo,mat);
+    if(dashed) line.computeLineDistances();
+
+    group.add(line);
+
+    // via pads at each joint, like a circuit board
+    [p1,bend,p2].forEach(pt=>{
+
+        const ringPts=[];
+        for(let a=0;a<=Math.PI*2+0.1;a+=0.3){
+            ringPts.push(new THREE.Vector3(pt.x+Math.cos(a)*5, pt.y, pt.z+Math.sin(a)*5));
+        }
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(ringPts),
+            new THREE.LineBasicMaterial({color,transparent:true,opacity:opacity*0.8})
+        ));
+
+    });
+
+    return group;
+
+}
+
+// a wavering relationship line — zigzags between the two nodes,
+// tapering to nothing at each end
+function wavyLine(p1,p2,color,opacity,segments,amplitude){
+
+    const pts=[];
+    const dir = new THREE.Vector3().subVectors(p2,p1);
+    const perp = new THREE.Vector3(-dir.z,0,dir.x).normalize();
+
+    for(let i=0;i<=segments;i++){
+
+        const t=i/segments;
+        const base = new THREE.Vector3().lerpVectors(p1,p2,t);
+        const wobble = Math.sin(t*Math.PI*5) * amplitude * Math.sin(t*Math.PI);
+
+        base.addScaledVector(perp,wobble);
+        pts.push(base);
+
+    }
+
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const mat = new THREE.LineBasicMaterial({color,transparent:true,opacity});
+
+    return new THREE.Line(geo,mat);
+
+}
+
+// a base layer (nodes, halo rings, decorative backdrop) that's
+// always visible regardless of which rule is isolated — every
+// rule's glyph is drawn relative to these nodes, so they can't
+// fade away with the rest
+const socialBase = new THREE.Group();
+socialLayer.add(socialBase);
+
+// ten numbered sub-groups, one per rule, each independently
+// selectable
+const socialRules = {};
+for(let i=1;i<=10;i++){
+    socialRules[i] = new THREE.Group();
+    socialLayer.add(socialRules[i]);
+}
+
+socialBase.add(shardField(FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d, 450));
+
+//////////////////////////////////////////////////
+// TEN RULES OF SOCIAL ORDER — ten distinct analytical
+// glyphs layered onto the same nodes and rooms, composited
+// into one abstract map rather than ten separate diagrams.
+// Rule 10 is the pre-existing relationship network itself
+// (below) — the other nine build up to it.
+//////////////////////////////////////////////////
+
+const ROLE_TAXONOMY = {
+    "Sepulchrave":"Ritual Authority",
+    "Fuchsia":"Family",
+    "Gertrude":"Family",
+    "Flay":"Servants",
+    "Swelter":"Servants",
+    "Prunesquallor":"Specialists",
+    "Steerpike":"Outcasts"
+};
+
+const ROLE_TIERS = ["Ritual Authority","Family","Servants","Specialists","Outcasts"];
+
+// bloodline only — Sepulchrave to Fuchsia, father to daughter.
+// Servants and Specialists get no lineage tick: their position
+// isn't passed down
+const LINEAGE = [["Sepulchrave","Fuchsia"]];
+
+const KNOWLEDGE_ROLE = {
+    "Sepulchrave":"holder",
+    "Prunesquallor":"holder",
+    "Flay":"gatekeeper",
+    "Steerpike":"seeker"
+};
+
+const ACCESS_RADIUS = {
+    "Ritual Authority":260,
+    "Family":160,
+    "Specialists":140,
+    "Servants":90,
+    "Outcasts":40 // officially the smallest — his manipulation
+                  // bursts elsewhere already visibly exceed it
+};
+
+// shared helper: a ring built from separate arc segments, so it
+// can have real gaps (not just a polyline with skipped points)
+function ringSegments(x,z,radius,segments,gapFraction){
+    const group = new THREE.Group();
+    for(let i=0;i<segments;i++){
+        if(Math.random()<gapFraction) continue;
+        const a1=(i/segments)*Math.PI*2, a2=((i+0.85)/segments)*Math.PI*2;
+        const pts=[];
+        for(let t=0;t<=1;t+=0.2){
+            const a=a1+(a2-a1)*t;
+            pts.push(new THREE.Vector3(x+Math.cos(a)*radius,1.5,z+Math.sin(a)*radius));
+        }
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(pts),
+            new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.35})
+        ));
+    }
+    return group;
+}
+
+// RULE 1 — Everyone exists to continue Gormenghast: every node
+// grounded by a small root/anchor into the floor, fixed to
+// maintenance rather than floating on personal motive
+function rule1_maintenanceAnchor(x,z,r){
+    const group = new THREE.Group();
+    for(let i=0;i<3;i++){
+        const a=(i/3)*Math.PI*2+Math.PI/2;
+        const len=r*1.3;
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(x,1,z),
+                new THREE.Vector3(x+Math.cos(a)*len,-6,z+Math.sin(a)*len)
+            ]),
+            new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.18})
+        ));
+    }
+    return group;
+}
+
+// the room itself, physically swollen — how much a room actually
+// keeps Gormenghast running (its own use value) inflates its real
+// footprint. A room used constantly to maintain the castle gets
+// visibly fat; a room barely used stays thin, close to its true size
+function rule1_fatRoom(x,z,room){
+
+    const swell = 1 + (room.use/10)*1.6; // use 1..10 -> 1.16x .. 2.6x
+    const w = room.w*0.4*swell;
+    const d = room.d*0.4*swell;
+
+    const group = new THREE.Group();
+
+    const fill = new THREE.Mesh(
+        new THREE.PlaneGeometry(w,d),
+        new THREE.MeshBasicMaterial({
+            color:0xffffff, transparent:true,
+            opacity: 0.05+(room.use/10)*0.13,
+            side:THREE.DoubleSide
+        })
+    );
+    fill.rotation.x = -Math.PI/2;
+    fill.position.set(x, 0.5, z);
+    group.add(fill);
+
+    const pts = [
+        new THREE.Vector3(-w/2,0,-d/2), new THREE.Vector3(w/2,0,-d/2),
+        new THREE.Vector3(w/2,0,d/2), new THREE.Vector3(-w/2,0,d/2)
+    ];
+    pts.push(pts[0]);
+
+    group.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts.map(p=>new THREE.Vector3(x+p.x,1,z+p.z))),
+        new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.15+(room.use/10)*0.3 })
+    ));
+
+    return group;
+
+}
+
+// RULE 2 — Ritual overrides function: the room a character
+// occupies gets two overlapping footprints, a clean functional
+// rectangle and a skewed ritual one, both at the room's own real
+// proportions (scaled down, not an arbitrary fixed box) — skew
+// proportional to that room's actual use value. The gap between
+// them is the conflict.
+function rule2_ritualVsFunction(room){
+    const group = new THREE.Group();
+    const w=room.w*0.35, d=room.d*0.35;
+    const funcPts=[
+        new THREE.Vector3(room.x-w/2,0,room.z-d/2),
+        new THREE.Vector3(room.x+w/2,0,room.z-d/2),
+        new THREE.Vector3(room.x+w/2,0,room.z+d/2),
+        new THREE.Vector3(room.x-w/2,0,room.z+d/2)
+    ];
+    funcPts.push(funcPts[0]);
+    group.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(funcPts),
+        new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.2})
+    ));
+    const skew=(room.use/10)*w*0.5;
+    const ritualPts=[
+        new THREE.Vector3(room.x-w/2+skew,2,room.z-d/2),
+        new THREE.Vector3(room.x+w/2+skew*0.5,2,room.z-d/2-skew*0.3),
+        new THREE.Vector3(room.x+w/2-skew*0.3,2,room.z+d/2),
+        new THREE.Vector3(room.x-w/2-skew*0.5,2,room.z+d/2+skew*0.3)
+    ];
+    ritualPts.push(ritualPts[0]);
+    group.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(ritualPts),
+        new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.35})
+    ));
+    return group;
+}
+
+// RULE 3 — Duty precedes individuality: a short "personal"
+// tendril off the node, deliberately shorter for high-authority
+// figures — the more power, the less room for a self outside
+// the role
+function rule3_personalTendril(x,z,power){
+    const len=Math.max(8,55-power*2);
+    const angle=Math.random()*Math.PI*2;
+    const pts=[];
+    for(let i=0;i<=10;i++){
+        const t=i/10;
+        pts.push(new THREE.Vector3(
+            x+Math.cos(angle)*len*t+Math.sin(t*8)*3, 0.5,
+            z+Math.sin(angle)*len*t+Math.cos(t*8)*3
+        ));
+    }
+    return new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.3})
+    );
+}
+
+// RULE 4 — Every inhabitant has a prescribed role: a small
+// 5-tier ladder above each node, lit at the tier they actually
+// occupy
+function rule4_roleTaxonomy(x,z,role){
+    const group = new THREE.Group();
+    const tierIndex = ROLE_TIERS.indexOf(role);
+    const baseY=40;
+    ROLE_TIERS.forEach((tier,i)=>{
+        const y=baseY+i*10;
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(x-3,y,z), new THREE.Vector3(x+3,y,z)
+            ]),
+            new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity: i===tierIndex?0.6:0.12})
+        ));
+    });
+    group.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(x,baseY,z), new THREE.Vector3(x,baseY+40,z)
+        ]),
+        new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.1})
+    ));
+    return group;
+}
+
+// RULE 5 — Roles are inherited, not chosen: a directional
+// line between bloodline nodes only
+function rule5_lineage(a,b){
+    const group = new THREE.Group();
+    group.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(a.x,50,a.z), new THREE.Vector3(b.x,50,b.z)
+        ]),
+        new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.3})
+    ));
+    const dir = new THREE.Vector3(b.x-a.x,0,b.z-a.z).normalize();
+    const perp = new THREE.Vector3(-dir.z,0,dir.x).multiplyScalar(4);
+    const tip = new THREE.Vector3(b.x,50,b.z);
+    const back = tip.clone().addScaledVector(dir,-10);
+    group.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([back.clone().add(perp), tip, back.clone().sub(perp)]),
+        new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.4})
+    ));
+    return group;
+}
+
+// RULE 6 — Identity is produced by position: the node's own
+// outer ring shape encodes role, not name — what's visually
+// distinct is the position, not the person
+function rule6_roleShape(x,z,r,role){
+    if(role==="Ritual Authority") return ringSegments(x,z,r*1.8,6,0);
+    if(role==="Family")           return ringSegments(x,z,r*1.8,4,0);
+    if(role==="Servants")         return ringSegments(x,z,r*1.8,3,0);
+    if(role==="Specialists")      return ringSegments(x,z,r*1.8,16,0.35);
+    if(role==="Outcasts")         return ringSegments(x,z,r*1.8,10,0.55);
+    return new THREE.Group();
+}
+
+// RULE 7 — Access is determined by status: a translucent
+// reach-ring sized by role tier, not by the individual
+function rule7_accessZone(x,z,role){
+    const radius = ACCESS_RADIUS[role] || 60;
+    const pts=[];
+    for(let a=0;a<=Math.PI*2+0.05;a+=0.1){
+        pts.push(new THREE.Vector3(x+Math.cos(a)*radius,0.2,z+Math.sin(a)*radius));
+    }
+    return new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.08})
+    );
+}
+
+// RULE 8 — Space determines behavior: tick density around the
+// node scales with how ritually busy that character's actual
+// room is
+function rule8_behaviorTicks(x,z,r,use){
+    const group = new THREE.Group();
+    const count = 4+use*2;
+    for(let i=0;i<count;i++){
+        const a=Math.random()*Math.PI*2;
+        const r1=r*1.1, r2=r1+4+Math.random()*6;
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(x+Math.cos(a)*r1,0.8,z+Math.sin(a)*r1),
+                new THREE.Vector3(x+Math.cos(a)*r2,0.8,z+Math.sin(a)*r2)
+            ]),
+            new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.12+Math.random()*0.1})
+        ));
+    }
+    return group;
+}
+
+// RULE 9 — Knowledge is unequally distributed: holders project
+// outward, seekers reach inward toward others, gatekeepers sit
+// behind a gapped ring that controls what passes through
+function rule9_knowledge(x,z,r,role){
+    const group = new THREE.Group();
+    if(role==="holder"){
+        for(let i=0;i<10;i++){
+            const a=(i/10)*Math.PI*2;
+            group.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x+Math.cos(a)*r*1.5,3,z+Math.sin(a)*r*1.5),
+                    new THREE.Vector3(x+Math.cos(a)*r*2.3,3,z+Math.sin(a)*r*2.3)
+                ]),
+                new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.3})
+            ));
+        }
+    }else if(role==="seeker"){
+        for(let i=0;i<10;i++){
+            const a=(i/10)*Math.PI*2;
+            group.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x+Math.cos(a)*r*2.3,3,z+Math.sin(a)*r*2.3),
+                    new THREE.Vector3(x+Math.cos(a)*r*1.5,3,z+Math.sin(a)*r*1.5)
+                ]),
+                new THREE.LineBasicMaterial({color:0xff5555,transparent:true,opacity:0.25})
+            ));
+        }
+    }else if(role==="gatekeeper"){
+        group.add(ringSegments(x,z,r*1.6,12,0.4));
+    }
+    return group;
+}
+
+// physical version of rule 7 — instead of an abstract reach-ring,
+// draw every one of the 16 real rooms as a small outline: bright
+// if within this character's actual status-based reach, nearly
+// invisible if not. Maps exactly what the rule asks for — where
+// this rank can and cannot go — using the real castle, not a radius
+function rule7_accessMap(x,z,role){
+
+    const radius = ACCESS_RADIUS[role] || 60;
+    const group = new THREE.Group();
+
+    rooms.forEach(r=>{
+
+        const dist = Math.hypot(r.x-x, r.z-z);
+        const accessible = dist <= radius;
+        const w = r.w*0.22, d = r.d*0.22;
+
+        const pts = [
+            new THREE.Vector3(r.x-w/2,0.3,r.z-d/2), new THREE.Vector3(r.x+w/2,0.3,r.z-d/2),
+            new THREE.Vector3(r.x+w/2,0.3,r.z+d/2), new THREE.Vector3(r.x-w/2,0.3,r.z+d/2)
+        ];
+        pts.push(pts[0]);
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(pts),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity: accessible ? 0.35 : 0.05 })
+        ));
+
+    });
+
+    return group;
+
+}
+
+// physical version of rule 8 — an actual curved trail from this
+// character's room to the real rooms their role would plausibly
+// take them, instead of abstract ticks around the node
+const BEHAVIOR_DESTINATIONS = {
+    "Sepulchrave":["Library"],
+    "Fuchsia":["Fuchsia Attic","Castle Roofscape"],
+    "Gertrude":["Lake"],
+    "Flay":["Master Ritual","Great Kitchen"],
+    "Swelter":["Great Kitchen"],
+    "Prunesquallor":["Prunesquallor Study"],
+    "Steerpike":["Great Kitchen","Upper Towers"]
+};
+
+function rule8_behaviorTrail(x,z,name){
+
+    const group = new THREE.Group();
+    const dests = BEHAVIOR_DESTINATIONS[name] || [];
+
+    dests.forEach(dname=>{
+
+        const d = roomByName[dname];
+        if(Math.abs(d.x-x)<1 && Math.abs(d.z-z)<1) return; // already there
+
+        const mid = new THREE.Vector3((x+d.x)/2, 10, (z+d.z)/2);
+        const curve = new THREE.QuadraticBezierCurve3(
+            new THREE.Vector3(x,2,z), mid, new THREE.Vector3(d.x,2,d.z)
+        );
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(curve.getPoints(18)),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.28 })
+        ));
+
+    });
+
+    return group;
+
+}
+
+// physical version of rule 9 — knowledge tied to the actual rooms
+// where it lives: holders' knowledge sits in a real room (the
+// Library, the Study), seekers reach toward those same real rooms,
+// gatekeepers highlight the real rooms they actually control
+// passage through
+const KNOWLEDGE_ROOMS = {
+    "Sepulchrave":["Library"],
+    "Prunesquallor":["Prunesquallor Study"],
+    "Steerpike":["Library","Prunesquallor Study"],
+    "Flay":["Master Ritual","Ancestral Dining Hall"]
+};
+
+function rule9_knowledgeMap(x,z,name,role){
+
+    const group = new THREE.Group();
+    const targets = KNOWLEDGE_ROOMS[name] || [];
+    const color = role==="seeker" ? 0xff5555 : 0xffffff;
+
+    targets.forEach(rname=>{
+
+        const room = roomByName[rname];
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(x,3,z), new THREE.Vector3(room.x,3,room.z)
+            ]),
+            new THREE.LineBasicMaterial({ color, transparent:true, opacity:0.32 })
+        ));
+
+        const w = room.w*0.28, d = room.d*0.28;
+        const pts=[
+            new THREE.Vector3(room.x-w/2,2,room.z-d/2), new THREE.Vector3(room.x+w/2,2,room.z-d/2),
+            new THREE.Vector3(room.x+w/2,2,room.z+d/2), new THREE.Vector3(room.x-w/2,2,room.z+d/2)
+        ];
+        pts.push(pts[0]);
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(pts),
+            new THREE.LineBasicMaterial({ color, transparent:true, opacity:0.45 })
+        ));
+
+    });
+
+    return group;
+
+}
+
+characters.forEach(c=>{
+
+    const node = new THREE.Mesh(
+
+        new THREE.CircleGeometry(c[3],24),
+
+        new THREE.MeshBasicMaterial({
+
+            color:0xffffff
+
+        })
+
+    );
+
+    node.rotation.x = -Math.PI/2;
+
+    node.position.set(c[1],0,c[2]);
+
+    node.userData.name = c[0];
+
+    socialBase.add(node);
+
+    socialBase.add(haloRings(c[1],c[2],c[3]));
+
+    nodeByName[c[0]] = {x:c[1], z:c[2], r:c[3]};
+
+    // rules 1, 3, 4, 6, 7, 8, 9 — each one a distinct glyph,
+    // each routed into its own numbered sub-group so it can be
+    // isolated independently
+    const role = ROLE_TAXONOMY[c[0]];
+    const room = roomByName[c[4]];
+
+    socialRules[1].add(rule1_maintenanceAnchor(c[1],c[2],c[3]));
+    socialRules[1].add(rule1_fatRoom(c[1],c[2],room));
+    socialRules[3].add(rule3_personalTendril(c[1],c[2],c[3]));
+    socialRules[4].add(rule4_roleTaxonomy(c[1],c[2],role));
+    socialRules[6].add(rule6_roleShape(c[1],c[2],c[3],role));
+    socialRules[7].add(rule7_accessZone(c[1],c[2],role));
+    socialRules[7].add(rule7_accessMap(c[1],c[2],role));
+    socialRules[8].add(rule8_behaviorTicks(c[1],c[2],c[3],room.use));
+    socialRules[8].add(rule8_behaviorTrail(c[1],c[2],c[0]));
+
+    if(KNOWLEDGE_ROLE[c[0]]){
+        socialRules[9].add(rule9_knowledge(c[1],c[2],c[3],KNOWLEDGE_ROLE[c[0]]));
+        socialRules[9].add(rule9_knowledgeMap(c[1],c[2],c[0],KNOWLEDGE_ROLE[c[0]]));
+    }
+
+});
+
+// rule 2 — ritual vs function footprints, one per occupied room
+// (Great Kitchen only drawn once even though two characters share it)
+[...new Set(characters.map(c=>c[4]))].forEach(roomName=>{
+    socialRules[2].add(rule2_ritualVsFunction(roomByName[roomName]));
+});
+
+// rule 5 — lineage: bloodline only
+LINEAGE.forEach(([a,b])=>{
+    socialRules[5].add(rule5_lineage(nodeByName[a], nodeByName[b]));
+});
+
+// rule 10 — the network itself: authority/manipulation/duty/conflict
+// relationships plus the two power bursts, the synthesis every
+// other rule builds toward
+
+// Sepulchrave: nominally the largest node, but the burst is faint —
+// a power that is formally intact and actually cracking
+socialRules[10].add(burst(nodeByName.Sepulchrave.x, nodeByName.Sepulchrave.z, 12, 70, 220, 0xffffff, 0.10));
+
+// Steerpike: small node, aggressive burst — the disruption is out of
+// proportion to his formal rank
+socialRules[10].add(burst(nodeByName.Steerpike.x, nodeByName.Steerpike.z, 18, 60, 260, 0xff5555, 0.20));
+
+// RELATIONSHIP NETWORK
+// authority = solid blue, manipulation = red dashed,
+// duty = thin white, conflict = wavering line
+const relationships = [
+
+    ["Sepulchrave","Fuchsia","authority"],
+    ["Sepulchrave","Flay","authority"],
+    ["Sepulchrave","Prunesquallor","duty"],
+    ["Flay","Sepulchrave","duty"],
+    ["Gertrude","Fuchsia","duty"],
+    ["Steerpike","Fuchsia","manipulation"],
+    ["Steerpike","Swelter","manipulation"],
+    ["Steerpike","Sepulchrave","manipulation"],
+    ["Flay","Swelter","conflict"],
+    ["Steerpike","Flay","conflict"]
+
+];
+
+relationships.forEach(([a,b,type])=>{
+
+    const A = nodeByName[a];
+    const B = nodeByName[b];
+
+    const p1 = new THREE.Vector3(A.x,2,A.z);
+    const p2 = new THREE.Vector3(B.x,2,B.z);
+
+    let line;
+
+    if(type==="authority") line = pcbTrace(p1,p2,0x4fa8ff,0.55,false);
+    else if(type==="manipulation") line = pcbTrace(p1,p2,0xff5555,0.6,true);
+    else if(type==="duty") line = pcbTrace(p1,p2,0xffffff,0.22,false);
+    else if(type==="conflict") line = wavyLine(p1,p2,0xdddddd,0.42,24,10);
+
+    socialRules[10].add(line);
+
+});
+
+//////////////////////////////////////////////////
+// COLLAGE BACKDROP — dense black fracture shards
+// concentrated where the social fabric is actually
+// breaking (conflict and manipulation edges), plus
+// circular motifs at the seat of ritual authority.
+// Always visible, same as the base nodes — this is
+// what gives the layer its overall texture regardless
+// of which rule tab is selected.
+//////////////////////////////////////////////////
+
+function blackFractureShard(cx,cz,size,angle){
+
+    const a = new THREE.Vector3(0,0,0);
+    const b = new THREE.Vector3(size*(0.7+Math.random()*0.6), 0, size*(0.15+Math.random()*0.3));
+    const c = new THREE.Vector3(size*(0.15+Math.random()*0.35), 0, -size*(0.9+Math.random()*0.8));
+
+    const geo = new THREE.BufferGeometry().setFromPoints([a,b,c]);
+    geo.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+        color:0x000000, side:THREE.DoubleSide, transparent:true, opacity:1
+    }));
+    mesh.position.set(cx,-3,cz);
+    mesh.rotation.y = angle;
+
+    const group = new THREE.Group();
+    group.add(mesh);
+
+    const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geo),
+        new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.3 })
+    );
+    edges.position.copy(mesh.position);
+    edges.rotation.copy(mesh.rotation);
+    group.add(edges);
+
+    return group;
+
+}
+
+// scatter shards around every conflict/manipulation relationship —
+// the instability itself is what fractures the collage, not an
+// arbitrary decorative field
+relationships
+    .filter(([a,b,type]) => type==="conflict" || type==="manipulation")
+    .forEach(([a,b,type])=>{
+
+        const A = nodeByName[a], B = nodeByName[b];
+        const midX = (A.x+B.x)/2, midZ = (A.z+B.z)/2;
+        const count = type==="conflict" ? 6 : 4; // conflict is the more violent fracture
+
+        for(let i=0;i<count;i++){
+            socialBase.add(blackFractureShard(
+                midX + (Math.random()-0.5)*220,
+                midZ + (Math.random()-0.5)*220,
+                60 + Math.random()*140,
+                Math.random()*Math.PI*2
+            ));
+        }
+
+    });
+
+// circular motifs — the reference's floating portholes — placed
+// at nodes whose role is Ritual Authority, sized by their power
+function collageMotif(cx,cz,radius){
+
+    const group = new THREE.Group();
+
+    const disc = new THREE.Mesh(
+        new THREE.CircleGeometry(radius,40),
+        new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.85, side:THREE.DoubleSide })
+    );
+    disc.rotation.x = -Math.PI/2;
+    disc.position.set(cx,-1,cz);
+    group.add(disc);
+
+    const ringPts=[];
+    for(let a=0;a<=Math.PI*2+0.05;a+=0.08){
+        ringPts.push(new THREE.Vector3(cx+Math.cos(a)*radius*1.3, 0, cz+Math.sin(a)*radius*1.3));
+    }
+    group.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(ringPts),
+        new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.4 })
+    ));
+
+    return group;
+
+}
+
+Object.keys(ROLE_TAXONOMY)
+    .filter(name=>ROLE_TAXONOMY[name]==="Ritual Authority")
+    .forEach(name=>{
+        const n = nodeByName[name];
+        socialBase.add(collageMotif(n.x, n.z, n.r*2.2));
+    });
+
+// a smaller circular motif at every character, not just Ritual
+// Authority — sized by their own power, so the biggest circle
+// still lands on Sepulchrave naturally, but the whole footprint
+// gets the reference's scattered-portholes texture instead of
+// one lone circle in a mostly empty field
+characters.forEach(c=>{
+    if(ROLE_TAXONOMY[c[0]]==="Ritual Authority") return; // already placed, bigger, above
+    socialBase.add(collageMotif(c[1], c[2], c[3]*1.1));
+});
+
+// ambient fracture — a broad, low-density scatter of black shards
+// across the entire footprint, background instability underneath
+// the concentrated fracture at real conflict points above. Without
+// this the layer is mostly empty floor between a couple of hot
+// zones; with it, the whole thing reads as one fractured surface
+for(let i=0;i<70;i++){
+    socialBase.add(blackFractureShard(
+        FOOTPRINT.cx + (Math.random()-0.5)*FOOTPRINT.w,
+        FOOTPRINT.cz + (Math.random()-0.5)*FOOTPRINT.d,
+        40 + Math.random()*110,
+        Math.random()*Math.PI*2
+    ));
+}
+
+//////////////////////////////////////////////////
+// LAYER 2.3 STEERPIKE ENGINE
+//////////////////////////////////////////////////
+
+const engineLayer=new THREE.Group();
+
+engineLayer.position.y=5000;
+
+scene.add(engineLayer);
+
+// the velocity field itself — scattered along the real room-to-room
+// route (steerpikePointAt), not an arbitrary sine wave, so this layer
+// physically passes through the same coordinates as the other layers.
+// Rendered as blocky dither squares (varying size, one InstancedMesh
+// draw call) instead of round points — overlapping transparent blocks
+// naturally read as halftone shading where the field is denser, no
+// per-block opacity trickery needed.
+// TWO TIERS, matching the reference's mix of continuous static
+// and larger blocky patches. The earlier single pass at 7000
+// instances was spread across the whole multi-thousand-unit
+// route and read as isolated floating squares — nowhere near
+// dense enough to actually merge into noise. This fixes that.
+
+// fine grain — many small blocks, forming the base continuous
+// static texture along the route
+const FINE_COUNT = 45000;
+const fineGeo = new THREE.PlaneGeometry(1,1);
+const fineMat = new THREE.MeshBasicMaterial({
+    color:0xff5555, transparent:true, opacity:0.28, side:THREE.DoubleSide
+});
+const engineFine = new THREE.InstancedMesh(fineGeo, fineMat, FINE_COUNT);
+const fineDummy = new THREE.Object3D();
+
+for(let i=0;i<FINE_COUNT;i++){
+
+    const t = Math.random();
+    const p = steerpikePointAt(t);
+    const spread = 55;
+    const bx = p.x + (Math.random()-0.5)*spread;
+    const bz = p.z + (Math.random()-0.5)*spread;
+    const size = 0.8 + Math.random()*2.4;
+
+    fineDummy.position.set(bx, Math.random()*1.5, bz);
+    fineDummy.rotation.set(-Math.PI/2, 0, 0);
+    fineDummy.scale.set(size,size,1);
+    fineDummy.updateMatrix();
+
+    engineFine.setMatrixAt(i, fineDummy.matrix);
+
+}
+
+engineFine.instanceMatrix.needsUpdate = true;
+engineLayer.add(engineFine);
+
+// coarse halftone — fewer, larger blocks on top of the fine
+// grain, the bigger dark/light patches within the noise
+const COARSE_COUNT = 7000;
+const coarseGeo = new THREE.PlaneGeometry(1,1);
+const coarseMat = new THREE.MeshBasicMaterial({
+    color:0xff5555, transparent:true, opacity:0.38, side:THREE.DoubleSide
+});
+const engineCoarse = new THREE.InstancedMesh(coarseGeo, coarseMat, COARSE_COUNT);
+const coarseDummy = new THREE.Object3D();
+
+for(let i=0;i<COARSE_COUNT;i++){
+
+    const t = Math.random();
+    const p = steerpikePointAt(t);
+    const spread = 70;
+    const bx = p.x + (Math.random()-0.5)*spread;
+    const bz = p.z + (Math.random()-0.5)*spread;
+    const size = 4 + Math.random()*10;
+
+    coarseDummy.position.set(bx, Math.random()*2, bz);
+    coarseDummy.rotation.set(-Math.PI/2, 0, 0);
+    coarseDummy.scale.set(size,size,1);
+    coarseDummy.updateMatrix();
+
+    engineCoarse.setMatrixAt(i, coarseDummy.matrix);
+
+}
+
+engineCoarse.instanceMatrix.needsUpdate = true;
+engineLayer.add(engineCoarse);
+
+// vertical stripe bursts at every real room — the reference's
+// banded, barcode-like regions, planted where the shockwaves
+// already are rather than anywhere arbitrary
+function stripeBurst(room,count){
+
+    const group = new THREE.Group();
+
+    for(let i=0;i<count;i++){
+
+        const ox = (Math.random()-0.5)*100;
+        const oz = (Math.random()-0.5)*100;
+        const h = 5 + Math.random()*24;
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(room.x+ox, 0, room.z+oz),
+                new THREE.Vector3(room.x+ox, h, room.z+oz)
+            ]),
+            new THREE.LineBasicMaterial({ color:0xff5555, transparent:true, opacity:0.15+Math.random()*0.35 })
+        ));
+
+    }
+
+    return group;
+
+}
+
+steerpikeWaypoints.forEach(room=>{
+    engineLayer.add(stripeBurst(room, 70));
+});
+
+// shockwave rings at every real room he passes through
+steerpikeWaypoints.forEach(room=>{
+
+    [1,1.6,2.3].forEach((mult,i)=>{
+
+        const pts=[];
+        const r = 40*mult;
+
+        for(let a=0;a<=Math.PI*2+0.05;a+=0.1){
+            pts.push(new THREE.Vector3(room.x+Math.cos(a)*r, 3, room.z+Math.sin(a)*r));
+        }
+
+        engineLayer.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(pts),
+            new THREE.LineBasicMaterial({ color:0xff5555, transparent:true, opacity:0.35/(i+1) })
+        ));
+
+    });
+
+});
+
+// the route itself, solid, so the path reads clearly under the noise
+engineLayer.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(steerpikeWaypoints.map(r=>new THREE.Vector3(r.x,4,r.z))),
+    new THREE.LineBasicMaterial({ color:0xff5555, transparent:true, opacity:0.7 })
+));
+
+//////////////////////////////////////////////////
+// CHARACTER PARACOSM — narrowed entirely to Steerpike's own
+// territory, not all six characters: his arc from arrival to
+// gaining access to power, five stages, each anchored to the
+// real rooms that stage actually happened in
+//////////////////////////////////////////////////
+
+const characterLayer=new THREE.Group();
+characterLayer.position.y = 3000;
+scene.add(characterLayer);
+
+function starMaterial(opacity){
+    return new THREE.PointsMaterial({
+        size:3,
+        color:0xffffff,
+        transparent:true,
+        opacity: opacity===undefined ? 0.8 : opacity
+    });
+}
+
+// five numbered stage sub-groups, one per selectable tab
+const steerpikeStages = {};
+for(let i=1;i<=5;i++){
+    steerpikeStages[i] = new THREE.Group();
+    characterLayer.add(steerpikeStages[i]);
+}
+
+function addStageCluster(group,pts,opacity){
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts,3));
+    group.add(new THREE.Points(geo, starMaterial(opacity)));
+}
+
+function stageTrail(group,rooms){
+    const pts = rooms.map(r=>new THREE.Vector3(r.x,4,r.z));
+    group.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({ color:0xff5555, transparent:true, opacity:0.5 })
+    ));
+}
+
+function stageCluster(group,room,count,radius,opacity){
+    const pts=[];
+    for(let i=0;i<count;i++){
+        const r = Math.pow(Math.random(),1.6)*radius;
+        const a = Math.random()*Math.PI*2;
+        pts.push(room.x+Math.cos(a)*r, 0, room.z+Math.sin(a)*r);
+    }
+    addStageCluster(group,pts,opacity);
+}
+
+// DITHER — the system destabilizing under him, more the further
+// he gets. Blocky, glitching pixel-scale panels instead of clean
+// points: stage 1 is barely there, stage 5 is thick with it —
+// he isn't just occupying these rooms by the end, he's corrupting
+// the picture of the castle itself
+function stageDither(group,room,stage,radius){
+
+    const blockCount = 20 + stage*18;
+    const maxBlockSize = 3 + stage*2.2;
+
+    for(let i=0;i<blockCount;i++){
+
+        const r = Math.pow(Math.random(),1.4)*radius;
+        const a = Math.random()*Math.PI*2;
+        const bx = room.x + Math.cos(a)*r;
+        const bz = room.z + Math.sin(a)*r;
+        const size = 2 + Math.random()*maxBlockSize;
+
+        const block = new THREE.Mesh(
+            new THREE.PlaneGeometry(size,size),
+            new THREE.MeshBasicMaterial({
+                color:0xffffff, transparent:true,
+                opacity: 0.15+Math.random()*0.35,
+                side:THREE.DoubleSide
+            })
+        );
+        block.rotation.x = -Math.PI/2;
+        block.position.set(bx, Math.random()*2, bz);
+        group.add(block);
+
+    }
+
+}
+
+// trail dither — the same escalating corruption, but scattered
+// ALONG the path between this stage's rooms instead of only at
+// the rooms themselves. Without this, the five stages read as
+// isolated pockets in a mostly empty footprint; with it, the
+// whole route he actually walks fills in
+function trailDither(group,rooms,stage){
+
+    for(let i=0;i<rooms.length-1;i++){
+
+        const a = rooms[i], b = rooms[i+1];
+        const count = 30 + stage*22;
+
+        for(let j=0;j<count;j++){
+
+            const t = Math.random();
+            const spread = 20 + stage*10;
+            const bx = a.x + (b.x-a.x)*t + (Math.random()-0.5)*spread;
+            const bz = a.z + (b.z-a.z)*t + (Math.random()-0.5)*spread;
+            const size = 1.5 + Math.random()*(2+stage*1.4);
+
+            const block = new THREE.Mesh(
+                new THREE.PlaneGeometry(size,size),
+                new THREE.MeshBasicMaterial({
+                    color:0xff5555, transparent:true,
+                    opacity: 0.1+Math.random()*0.22,
+                    side:THREE.DoubleSide
+                })
+            );
+            block.rotation.x = -Math.PI/2;
+            block.position.set(bx, Math.random()*2, bz);
+            group.add(block);
+
+        }
+
+    }
+
+}
+
+// STAGE 1 — ARRIVAL: the Great Kitchen, where he starts as a
+// scullion, no standing at all
+stageCluster(steerpikeStages[1], roomByName["Great Kitchen"], 260, 90, 0.65);
+stageDither(steerpikeStages[1], roomByName["Great Kitchen"], 1, 90);
+
+// STAGE 2 — DISCOVERY: the weak points he finds first — Holding
+// Room and Fuchsia Attic, rooms nobody official watches
+{
+    const rooms = [roomByName["Holding Room"], roomByName["Fuchsia Attic"]];
+    rooms.forEach(r=>{
+        stageCluster(steerpikeStages[2], r, 160, 70, 0.6);
+        stageDither(steerpikeStages[2], r, 2, 70);
+    });
+    const path = [roomByName["Great Kitchen"], ...rooms];
+    stageTrail(steerpikeStages[2], path);
+    trailDither(steerpikeStages[2], path, 2);
+}
+
+// STAGE 3 — EXPLOITATION: Prunesquallor's Study and the Library —
+// access to knowledge, and the people who hold it
+{
+    const rooms = [roomByName["Prunesquallor Study"], roomByName["Library"]];
+    rooms.forEach(r=>{
+        stageCluster(steerpikeStages[3], r, 200, 75, 0.65);
+        stageDither(steerpikeStages[3], r, 3, 75);
+    });
+    const path = [roomByName["Fuchsia Attic"], ...rooms];
+    stageTrail(steerpikeStages[3], path);
+    trailDither(steerpikeStages[3], path, 3);
+}
+
+// STAGE 4 — ASCENT: Castle Roofscape and Upper Towers — literally
+// climbing, both physically and in standing
+{
+    const rooms = [roomByName["Castle Roofscape"], roomByName["Upper Towers"]];
+    rooms.forEach(r=>{
+        stageCluster(steerpikeStages[4], r, 220, 85, 0.7);
+        stageDither(steerpikeStages[4], r, 4, 85);
+    });
+    const path = [roomByName["Library"], ...rooms];
+    stageTrail(steerpikeStages[4], path);
+    trailDither(steerpikeStages[4], path, 4);
+}
+
+// STAGE 5 — POWER: Master Ritual — the seat of authority itself,
+// densest and tightest cluster of all five stages, reached at last
+{
+    const room = roomByName["Master Ritual"];
+    stageCluster(steerpikeStages[5], room, 400, 55, 0.85);
+    stageDither(steerpikeStages[5], room, 5, 60);
+    const path = [roomByName["Upper Towers"], room];
+    stageTrail(steerpikeStages[5], path);
+    trailDither(steerpikeStages[5], path, 5);
+}
+
+//////////////////////////////////////////////////
+// CHARACTER ATLAS (top-level, separate from Character
+// Paracosm) — not behavior, subjective
+// worlds. The same castle, but which rooms actually MATTER
+// to a given character and how much, which is a different
+// ranking than objective use-frequency. Two worked examples
+// so far — Fuchsia and Sepulchrave, the two the framework
+// names directly — rest of the cast still to build.
+//////////////////////////////////////////////////
+
+const characterAtlas = new THREE.Group();
+characterAtlas.position.y = 4000;
+scene.add(characterAtlas);
+
+// personal significance, per character — deliberately NOT the
+// same as the objective `use` field on rooms. Fuchsia's Library
+// weight is zero: it dominates the castle's objective use, but
+// means nothing to her personally. That divergence is the point.
+const SUBJECTIVE_WORLDS = {
+
+    "Fuchsia": [
+        { room:"Fuchsia Attic",     weight:10 },
+        { room:"Castle Roofscape",  weight:7  },
+        { room:"Countess Chamber",  weight:4  },
+        { room:"Cora Clarice",      weight:2  }
+    ],
+
+    "Sepulchrave": [
+        { room:"Library",              weight:10 },
+        { room:"Master Ritual",        weight:6  },
+        { room:"Ancestral Dining Hall",weight:4  }
+    ]
+
+};
+
+// a node as a density cluster, not a flat disc — point cloud +
+// layered contour rings + fine radiating ticks, all scaled by how
+// much this room actually matters to this character. more weight
+// = more points, more rings, more texture, not just a bigger circle
+function heatNode(x,z,weight){
+
+    const group = new THREE.Group();
+    const radius = 14 + weight*7;
+
+    const pts=[];
+    const pointCount = 140 + weight*45;
+
+    for(let i=0;i<pointCount;i++){
+        const r = Math.pow(Math.random(),1.6)*radius;
+        const a = Math.random()*Math.PI*2;
+        pts.push(x+Math.cos(a)*r, 0, z+Math.sin(a)*r);
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts,3));
+    group.add(new THREE.Points(geo, new THREE.PointsMaterial({
+        size:2.2, color:0xffffff, transparent:true, opacity:0.55
+    })));
+
+    // layered contour rings — topographic density read instead of
+    // one clean outline
+    [0.6,1.0,1.5,2.2].forEach((mult,i)=>{
+
+        const ringPts=[];
+        for(let a=0;a<=Math.PI*2+0.05;a+=0.15){
+            ringPts.push(new THREE.Vector3(x+Math.cos(a)*radius*mult, 0.4+i*0.3, z+Math.sin(a)*radius*mult));
+        }
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(ringPts),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.24/(i+1) })
+        ));
+
+    });
+
+    // fine radiating ticks fraying outward — texture at the edge,
+    // more of them the more this room matters
+    const tickCount = 16 + weight*3;
+
+    for(let i=0;i<tickCount;i++){
+
+        const a = Math.random()*Math.PI*2;
+        const r1 = radius*(1.6+Math.random()*0.3);
+        const r2 = r1 + 6+Math.random()*12;
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(x+Math.cos(a)*r1,0,z+Math.sin(a)*r1),
+                new THREE.Vector3(x+Math.cos(a)*r2,0,z+Math.sin(a)*r2)
+            ]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.14+Math.random()*0.16 })
+        ));
+
+    }
+
+    return group;
+
+}
+
+// a route between two of this character's rooms as a heat-trail —
+// many jittered, bowed strands instead of one clean line, so it
+// reads as a smeared trace of repeated movement, not a vector arrow
+function heatTrail(a,b,y1,y2){
+
+    if(y1===undefined) y1=2;
+    if(y2===undefined) y2=2;
+
+    const group = new THREE.Group();
+
+    const dx = b.z-a.z, dz = b.x-a.x;
+    const perpLen = Math.sqrt(dx*dx+dz*dz) || 1;
+    const perpX = -dx/perpLen, perpZ = dz/perpLen;
+
+    const strandCount = 11;
+
+    for(let s=0;s<strandCount;s++){
+
+        const jitter = (s-strandCount/2)*3 + (Math.random()-0.5)*6;
+
+        const p1 = new THREE.Vector3(a.x + perpX*jitter*0.3, y1, a.z + perpZ*jitter*0.3);
+        const p2 = new THREE.Vector3(b.x + perpX*jitter*0.3, y2, b.z + perpZ*jitter*0.3);
+        const mid = p1.clone().lerp(p2,0.5).add(new THREE.Vector3(perpX*jitter, 0, perpZ*jitter));
+
+        const curve = new THREE.QuadraticBezierCurve3(p1,mid,p2);
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(curve.getPoints(24)),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.04+Math.random()*0.11 })
+        ));
+
+    }
+
+    return group;
+
+}
+
+// PANELS + CIRCUITRY — dense reflective panels and fine trace
+// routing around each significant node, more of both the more
+// personally significant that room is. This is what gives
+// Character Atlas its own texture: a small dense complex around
+// each memory, not just a node and a connecting line
+function nodeComplex(x,z,weight){
+
+    const group = new THREE.Group();
+
+    // reflective panels — flat quads at varying rotation and
+    // opacity, like architectural surfaces catching light
+    // differently. more of them for higher-weight rooms.
+    const panelCount = 2 + Math.round(weight*0.6);
+
+    for(let i=0;i<panelCount;i++){
+
+        const pw = 14 + Math.random()*(20+weight*3);
+        const pd = 10 + Math.random()*(16+weight*2);
+        const offsetR = 20 + Math.random()*(30+weight*4);
+        const a = Math.random()*Math.PI*2;
+        const px = x + Math.cos(a)*offsetR;
+        const pz = z + Math.sin(a)*offsetR;
+
+        const panel = new THREE.Mesh(
+            new THREE.PlaneGeometry(pw,pd),
+            new THREE.MeshBasicMaterial({
+                color:0xffffff, transparent:true,
+                opacity: 0.05+Math.random()*0.14,
+                side:THREE.DoubleSide
+            })
+        );
+        panel.rotation.x = -Math.PI/2;
+        panel.rotation.z = Math.random()*Math.PI;
+        panel.position.set(px, 0.5+Math.random()*3, pz);
+        group.add(panel);
+
+        // thin edge outline so the panel reads as a distinct
+        // surface, not a soft blob
+        const edgePts = [
+            new THREE.Vector3(-pw/2,0,-pd/2), new THREE.Vector3(pw/2,0,-pd/2),
+            new THREE.Vector3(pw/2,0,pd/2), new THREE.Vector3(-pw/2,0,pd/2)
+        ];
+        edgePts.push(edgePts[0]);
+        const edgeLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(edgePts),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.25 })
+        );
+        edgeLine.rotation.copy(panel.rotation);
+        edgeLine.position.copy(panel.position);
+        group.add(edgeLine);
+
+    }
+
+    // fine circuit micro-routing — short orthogonal traces
+    // fraying outward, denser at higher weight
+    const traceCount = 4 + Math.round(weight*1.2);
+
+    for(let i=0;i<traceCount;i++){
+
+        const a = Math.random()*Math.PI*2;
+        const r1 = 8 + weight*3;
+        const bend = r1 + 6+Math.random()*10;
+        const r2 = bend + 4+Math.random()*10;
+
+        const p1 = new THREE.Vector3(x+Math.cos(a)*r1, 1, z+Math.sin(a)*r1);
+        const p2 = new THREE.Vector3(x+Math.cos(a)*bend, 1, z+Math.sin(a)*bend);
+        const p3 = new THREE.Vector3(p2.x + (Math.random()-0.5)*r2, 1, p2.z + (Math.random()-0.5)*r2);
+
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([p1,p2,p3]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.18+Math.random()*0.15 })
+        ));
+
+    }
+
+    return group;
+
+}
+
+function buildSubjectiveWorld(entries){
+
+    const group = new THREE.Group();
+    const nodes = entries.map(e=>({ ...roomByName[e.room], weight:e.weight }));
+
+    // route between this character's own significant rooms, in
+    // descending order of what matters most to them — their
+    // personal path through the castle, not a generic corridor
+    const sorted = [...nodes].sort((a,b)=>b.weight-a.weight);
+
+    for(let i=0;i<sorted.length-1;i++){
+        group.add(heatTrail(sorted[i], sorted[i+1]));
+    }
+
+    // a node per significant room, sized and textured by how much
+    // it matters to this character specifically, plus the
+    // panel/circuitry complex around it
+    nodes.forEach(n=>{
+        group.add(heatNode(n.x, n.z, n.weight));
+        group.add(nodeComplex(n.x, n.z, n.weight));
+    });
+
+    return group;
+
+}
+
+Object.keys(SUBJECTIVE_WORLDS).forEach(name=>{
+    characterAtlas.add(buildSubjectiveWorld(SUBJECTIVE_WORLDS[name]));
+});
+
+// AMBIENT MEMORY FOG — a faint field of panels and points across
+// the whole footprint, not just the named significant rooms. A
+// subjective world isn't only its handful of important places —
+// it's those places standing out of a much larger half-remembered
+// castle. Without this, two clusters float in empty black; with
+// it, they're figures against a whole remembered ground.
+for(let i=0;i<26;i++){
+
+    const px = FOOTPRINT.cx + (Math.random()-0.5)*FOOTPRINT.w;
+    const pz = FOOTPRINT.cz + (Math.random()-0.5)*FOOTPRINT.d;
+    const pw = 10 + Math.random()*22;
+    const pd = 8 + Math.random()*16;
+
+    const panel = new THREE.Mesh(
+        new THREE.PlaneGeometry(pw,pd),
+        new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.03+Math.random()*0.04, side:THREE.DoubleSide })
+    );
+    panel.rotation.x = -Math.PI/2;
+    panel.rotation.z = Math.random()*Math.PI;
+    panel.position.set(px, 0.3, pz);
+    characterAtlas.add(panel);
+
+}
+
+const fogPts=[];
+for(let i=0;i<3000;i++){
+    fogPts.push(
+        FOOTPRINT.cx + (Math.random()-0.5)*FOOTPRINT.w,
+        0.2,
+        FOOTPRINT.cz + (Math.random()-0.5)*FOOTPRINT.d
+    );
+}
+const fogGeo = new THREE.BufferGeometry();
+fogGeo.setAttribute('position', new THREE.Float32BufferAttribute(fogPts,3));
+characterAtlas.add(new THREE.Points(fogGeo, new THREE.PointsMaterial({
+    size:1.1, color:0xffffff, transparent:true, opacity:0.05
+})));
+
+//////////////////////////////////////////////////
+// LAYER 4 ABSTRACT SHADOW
+//////////////////////////////////////////////////
+
+const shadowLayer=new THREE.Group();
+
+shadowLayer.position.y=6000;
+
+scene.add(shadowLayer);
+
+// residue accumulated at every real room, not one blob at the
+// origin — bigger rooms (more footprint, more history) leave more
+// sediment, so the density pattern is literally built from the
+// same coordinates as Mind Palace, just with the labels stripped away
+let totalRoomArea = 0;
+rooms.forEach(r=>{ totalRoomArea += r.w*r.d; });
+
+const shadowPts=[];
+
+rooms.forEach(r=>{
+
+    const area = r.w*r.d;
+    const count = Math.max(400, Math.round(120000 * area/totalRoomArea));
+    const radius = Math.sqrt(area)/2;
+
+    for(let i=0;i<count;i++){
+
+        const angle = Math.random()*Math.PI*2;
+        const rad = Math.pow(Math.random(),2)*radius;
+
+        shadowPts.push(
+            r.x + Math.cos(angle)*rad,
+            0,
+            r.z + Math.sin(angle)*rad
+        );
+
+    }
+
+});
+
+const shadowGeo=new THREE.BufferGeometry();
+
+shadowGeo.setAttribute(
+
+'position',
+
+new THREE.Float32BufferAttribute(
+shadowPts,
+3
+)
+
+);
+
+const shadowDensityPoints = new THREE.Points(
+
+shadowGeo,
+
+new THREE.PointsMaterial({
+
+size:2,
+
+color:0xffffff,
+
+transparent:true,
+
+opacity:0.03
+
+})
+
+);
+
+shadowLayer.add(shadowDensityPoints);
+
+//////////////////////////////////////////////////
+// INVERT — the official route (Mind Palace's rooms)
+// rendered solid, so the gaps between them — where
+// Steerpike actually moves, his domestic space — are
+// what's left visible. Rooms go black and disappear into
+// the background; everything he actually used shows up
+// as the negative space around them.
+//////////////////////////////////////////////////
+
+const shadowInvertGroup = new THREE.Group();
+shadowInvertGroup.visible = false;
+shadowLayer.add(shadowInvertGroup);
+
+// the gap field — white, covering the same footprint as
+// every other layer, sitting just below the room cutouts
+const invertGapField = new THREE.Mesh(
+    new THREE.PlaneGeometry(FOOTPRINT.w, FOOTPRINT.d),
+    new THREE.MeshBasicMaterial({
+        color:0xffffff, transparent:true, opacity:0.9, side:THREE.DoubleSide
+    })
+);
+invertGapField.rotation.x = -Math.PI/2;
+invertGapField.position.set(FOOTPRINT.cx, 0, FOOTPRINT.cz);
+shadowInvertGroup.add(invertGapField);
+
+// every real room, solid black, cut out of the white field —
+// the official plan rendered as an absence rather than a presence
+rooms.forEach(r=>{
+
+    const cutout = new THREE.Mesh(
+        new THREE.PlaneGeometry(r.w, r.d),
+        new THREE.MeshBasicMaterial({ color:0x000000, side:THREE.DoubleSide })
+    );
+    cutout.rotation.x = -Math.PI/2;
+    cutout.position.set(r.x, 1, r.z);
+    shadowInvertGroup.add(cutout);
+
+    // a thin white seam at each room's edge — otherwise a black
+    // room against a white field with no camera AA reads as a
+    // slightly fuzzy hole rather than a deliberate cut
+    const edgePts = [
+        new THREE.Vector3(r.x-r.w/2,1.5,r.z-r.d/2),
+        new THREE.Vector3(r.x+r.w/2,1.5,r.z-r.d/2),
+        new THREE.Vector3(r.x+r.w/2,1.5,r.z+r.d/2),
+        new THREE.Vector3(r.x-r.w/2,1.5,r.z+r.d/2)
+    ];
+    edgePts.push(edgePts[0]);
+    shadowInvertGroup.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(edgePts),
+        new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.5 })
+    ));
+
+});
+
+//////////////////////////////////////////////////
+// LAYER FOCUS SYSTEM
+//////////////////////////////////////////////////
+
+const uiLayerName = document.getElementById("layerName");
+const uiLayerQuestion = document.getElementById("layerQuestion");
+const uiLayerAnalysis = document.getElementById("layerAnalysis");
+
+function addLayerFloor(group,cx,cz,w,d,opacity){
+
+    const floor = new THREE.Mesh(
+
+        new THREE.PlaneGeometry(w,d),
+
+        new THREE.MeshBasicMaterial({
+            color:0xffffff,
+            transparent:true,
+            opacity:opacity===undefined ? 0.045 : opacity,
+            side:THREE.DoubleSide,
+            depthWrite:false
+        })
+
+    );
+
+    floor.rotation.x = -Math.PI/2;
+    floor.position.set(cx,-4,cz);
+
+    group.add(floor);
+
+    return floor;
+
+}
+
+function makeHitPlane(group,cx,cz,w,d){
+
+    const plane = new THREE.Mesh(
+
+        new THREE.PlaneGeometry(w,d),
+
+        new THREE.MeshBasicMaterial({
+            color:0xffffff,
+            transparent:true,
+            opacity:0,
+            depthWrite:false
+        })
+
+    );
+
+    plane.rotation.x = -Math.PI/2;
+    plane.position.set(cx,0,cz);
+
+    group.add(plane);
+
+    return plane;
+
+}
+
+// faint white ground planes so every layer reads as a place in the
+// stack, not just a scatter of points floating in the void
+addLayerFloor(layer1, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d);
+addLayerFloor(territorySheet, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d);
+addLayerFloor(socialLayer, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d);
+addLayerFloor(characterLayer, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d);
+addLayerFloor(characterAtlas, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d);
+addLayerFloor(engineLayer, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d);
+addLayerFloor(shadowLayer, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d);
+
+const TERRITORY_SUBLAYERS = [
+    {
+        key:"fold",
+        name:"FOLD",
+        question:"What's concealed, and how deeply?",
+        analysis:"Fold, Crease, Pocket, Wrap, Veil, Peel, Compression — rendered now as a cascade, not layered paper. Attention that should fall on a room but doesn't: a stream of turbulence falling from height, thinning as it drops, pooling into a splash exactly where the room sits. The less that room is watched, the taller the cascade, the more streams, the bigger the pool. A faint rain falls across the whole territory too — the same neglect, ambient everywhere, with the eight weak points as where it actually accumulates.",
+        group: territoryFold,
+        currentFade:1, targetFade:1
+    },
+    {
+        key:"attach",
+        name:"ATTACHMENT",
+        question:"How do the pieces hold together?",
+        analysis:"Clip, Tape, Thread, Pin, Hook, Tie, Suspend, Patch — eight distinct kinds of improvised attachment between weak points, not one clean network. Steerpike doesn't see continuous territory, he sees discrete pieces stuck, tied, and folded together. Every weak point also trails a handful of dangling, unresolved threads of its own — Suspend, not fully resolved — minor attachments that never went anywhere.",
+        group: territoryAttach,
+        currentFade:1, targetFade:1
+    },
+    {
+        key:"xray",
+        name:"X-RAY",
+        question:"What does each hiding place let him see toward?",
+        analysis:"A faint dashed sightline from every weak point to Master Ritual — not a route he walks, but a line of sight. The actual source of power, always visible from every hiding place, never yet reached. A scan-line grid runs across the whole territory underneath the eight real sightlines, which stay the deliberate, bright lines within it — seeing through the surface everywhere, not just where it matters most.",
+        group: territoryXray,
+        currentFade:1, targetFade:1
+    }
+];
+
+const SOCIAL_SUBLAYERS = [
+    { key:"r1", name:"RULE 1 · MAINTENANCE", question:"Does this exist to continue Gormenghast?", analysis:"Every node is grounded by a small root into the floor — fixed to maintenance, not floating free on personal motive. The room itself is physically swollen, too: the more that room actually keeps Gormenghast running (its own use value), the fatter its real footprint gets, up to 2.6x its true size. A room barely used stays close to its honest dimensions.", group: socialRules[1], currentFade:1, targetFade:1 },
+    { key:"r2", name:"RULE 2 · RITUAL VS FUNCTION", question:"Where do ritual and function conflict?", analysis:"Each occupied room gets two overlapping footprints, both drawn at that room's own real proportions — a clean functional rectangle and a skewed ritual one. Skew scales with that room's actual use value; the gap between the two shapes is the conflict itself, not a metaphor for it.", group: socialRules[2], currentFade:1, targetFade:1 },
+    { key:"r3", name:"RULE 3 · DUTY", question:"How much room is left for a self?", analysis:"A short personal tendril off each node — deliberately shorter for high-authority figures. The more power, the less room for anything outside the role.", group: socialRules[3], currentFade:1, targetFade:1 },
+    { key:"r4", name:"RULE 4 · ROLE", question:"What is this person's prescribed role?", analysis:"A five-tier ladder above each node — Ritual Authority, Family, Servants, Specialists, Outcasts — lit at the tier they actually occupy.", group: socialRules[4], currentFade:1, targetFade:1 },
+    { key:"r5", name:"RULE 5 · INHERITANCE", question:"Is this position chosen, or inherited?", analysis:"Only Sepulchrave passes a line to Fuchsia — father to daughter. Servants and Specialists get no lineage tick: their position isn't passed down.", group: socialRules[5], currentFade:1, targetFade:1 },
+    { key:"r6", name:"RULE 6 · IDENTITY", question:"Is this person, or this position?", analysis:"Each node's outer shape encodes role, not name — hexagon, square, triangle, dashed circle, broken ring. What's visually distinct is the position, not the person.", group: socialRules[6], currentFade:1, targetFade:1 },
+    { key:"r7", name:"RULE 7 · ACCESS", question:"Where can this rank legitimately go?", analysis:"A translucent reach-ring sized by status tier, and underneath it, all sixteen real rooms drawn as small outlines — bright where this rank can actually go, nearly invisible where it can't. Steerpike's real reach is officially the smallest — which is exactly why his manipulation bursts elsewhere on this map matter: he's already operating past what these rooms should permit.", group: socialRules[7], currentFade:1, targetFade:1 },
+    { key:"r8", name:"RULE 8 · BEHAVIOR", question:"Does this space shape how they act?", analysis:"Tick density around each node scales with how ritually busy that character's actual room is, and a curved trail runs from their room to the real rooms their role would actually take them — Sepulchrave to the Library, Swelter to the Great Kitchen, Steerpike toward the Great Kitchen and Upper Towers both. Behavior mapped as an actual route through the castle, not an abstract tendency.", group: socialRules[8], currentFade:1, targetFade:1 },
+    { key:"r9", name:"RULE 9 · KNOWLEDGE", question:"Who knows, who seeks, who gatekeeps?", analysis:"Sepulchrave and Prunesquallor radiate outward as knowledge holders. Steerpike reaches inward as a seeker. Flay sits behind a gapped ring as gatekeeper. And now tied to the actual rooms it lives in: Sepulchrave's line runs to the real Library, Prunesquallor's to his real Study, Steerpike's reaches (in red) toward both, Flay's highlights the real Master Ritual chamber and Ancestral Dining Hall he actually controls passage through.", group: socialRules[9], currentFade:1, targetFade:1 },
+    { key:"r10", name:"RULE 10 · NETWORK", question:"Is this a building, or a network?", analysis:"The relationship network itself — authority, manipulation, duty, conflict, routed like circuit traces. The synthesis every other rule builds toward.", group: socialRules[10], currentFade:1, targetFade:1 }
+];
+
+const CHARACTER_PARACOSM_SUBLAYERS = [
+    { key:"s1", name:"1 · ARRIVAL", question:"Where does he start?", analysis:"The Great Kitchen — a scullion, no standing at all. The dither here is barely present: he hasn't destabilized anything yet.", group: steerpikeStages[1], currentFade:1, targetFade:1 },
+    { key:"s2", name:"2 · DISCOVERY", question:"What weak points does he find first?", analysis:"The Holding Room and Fuchsia Attic — rooms nobody official watches. The dither starts to show: the picture is no longer perfectly clean.", group: steerpikeStages[2], currentFade:1, targetFade:1 },
+    { key:"s3", name:"3 · EXPLOITATION", question:"Whose knowledge does he access?", analysis:"Prunesquallor's Study and the Library — access to knowledge, and the people who hold it. Noticeably more glitch now: the system is bending around him.", group: steerpikeStages[3], currentFade:1, targetFade:1 },
+    { key:"s4", name:"4 · ASCENT", question:"How does he climb?", analysis:"Castle Roofscape and Upper Towers — literally climbing, both physically and in standing. The dither is heavy: the official picture barely holds together here.", group: steerpikeStages[4], currentFade:1, targetFade:1 },
+    { key:"s5", name:"5 · POWER", question:"Where does the arc end?", analysis:"Master Ritual — the seat of authority itself. The densest, tightest cluster of all five stages, and the thickest dither — reached at last, and the picture is as corrupted as it gets.", group: steerpikeStages[5], currentFade:1, targetFade:1 }
+];
+
+const LAYERS = [
+    {
+        name:"MIND PALACE",
+        question:"What exists?",
+        analysis:"This layer does not map the castle as a surveyor would. Rituals override function: rooms used constantly — Master Ritual, the Great Kitchen, the Library, Ancestral Dining Hall, the ritual district — fracture and burst outward from their own walls, distorted in direct proportion to how heavily they're actually used. Rooms that only serve a function when needed — the Holding Room, the Schoolroom, the Dead Twins Room — stay small, plain, undistorted. Nothing here is decorative; the shape of a room is its usage, made visible.",
+        group: layer1,
+        hit: makeHitPlane(layer1, 1750, 100, 4400, 3200)
+    },
+    {
+        name:"TERRITORY",
+        question:"How is space used?",
+        analysis:"Not a field — pieces. Steerpike reads the castle's weak points as discrete things stuck, tied, and folded together, not continuous territory. Three lenses on that: Fold (concealment depth), Attachment (eight kinds of improvised connection), and X-Ray (sightlines to power). All three shown together by default — pick one below to isolate it.",
+        group: territorySheet,
+        hit: makeHitPlane(territorySheet, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d),
+        subLayers: TERRITORY_SUBLAYERS
+    },
+    {
+        name:"SOCIAL PARACOSM",
+        question:"Who controls whom?",
+        analysis:"Ten rules, ten glyphs, one composite map. Every node is grounded, skewed against its own room's ritual footprint, trailing a tendril sized by how much self its power leaves room for, climbing a role ladder, taking its shape from that role, occasionally passing a line of inheritance, ringed by its official reach, ticked by its room's busyness, marked as knowledge holder or seeker or gatekeeper — and underneath all of it, the network itself. Black fracture shards concentrate wherever a conflict or manipulation edge actually runs, scattered more thinly across the rest of the footprint as background instability, and a floating circular motif marks every character — biggest at Ritual Authority, smaller elsewhere. All ten shown together by default — pick one below to isolate it.",
+        group: socialLayer,
+        hit: makeHitPlane(socialLayer, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d),
+        subLayers: SOCIAL_SUBLAYERS
+    },
+    {
+        name:"CHARACTER PARACOSM",
+        question:"How does Steerpike take the castle?",
+        analysis:"Narrowed entirely to Steerpike — not all six characters. Five stages, arrival to power: the Great Kitchen he starts in, the weak points he discovers, the knowledge he exploits, the physical and social ascent, and finally Master Ritual itself. He ignores every room that doesn't serve this arc. Each stage carries a dither that thickens stage 1→5, both at the rooms themselves and scattered along the paths between them — the route he actually walks fills in, not just the endpoints. He isn't just occupying these rooms by the end; he's corrupting the picture of the castle itself, and the noise is the evidence. All five shown together by default — pick one below to isolate it.",
+        group: characterLayer,
+        hit: makeHitPlane(characterLayer, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d),
+        subLayers: CHARACTER_PARACOSM_SUBLAYERS
+    },
+    {
+        name:"CHARACTER ATLAS",
+        question:"What is Gormenghast to each of them?",
+        analysis:"Not behavior — subjective worlds. Character Paracosm shows where Steerpike is physically found; this shows what actually matters to a person once they're there, which is a different ranking entirely. Fuchsia's Library weight is zero: the room dominates the castle's objective use, but means nothing to her personally — her real map is the Attic, the Roofscape, her mother's Chamber. Sepulchrave's is the inverse: the Library alone nearly is his castle. Each significant room is dense with its own small complex — reflective panels catching attention at different angles, fine circuit-like traces fraying outward. A faint fog of the same panels and points drifts across the rest of the footprint too — the much larger, half-remembered castle these specific rooms stand out against. Two worked examples so far; the rest of the cast's subjective atlases aren't built yet.",
+        group: characterAtlas,
+        hit: makeHitPlane(characterAtlas, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d)
+    },
+    {
+        name:"STEERPIKE ENGINE",
+        question:"How does change propagate?",
+        analysis:"No portrait, no name attached to a body — Steerpike is rendered purely as a velocity field walking the same seven real rooms as Territory's own path: Great Kitchen, Holding Room, Fuchsia Attic, Prunesquallor Study, Library, Castle Roofscape, Upper Towers. That is closer to how he functions in the story — not a person occupying rooms but a disturbance moving through them. The field itself is dithered, not smooth — two tiers of it: tens of thousands of tiny blocks forming a continuous static along the whole route, and a smaller number of much larger blocks laid over that as the coarser dark patches within the noise. It merges into real halftone shading exactly where the path runs, thinning at the edges. Every room he passes also bursts into a cluster of vertical stripes, barcode-like, alongside the shockwave rings — a third, noisier signal layered on top of the first two. He does not need to hold a room once he has destabilized what was ritual-fixed inside it. The field is red because it is the one force in the castle that does not answer to Gormenghast's own laws.",
+        group: engineLayer,
+        hit: makeHitPlane(engineLayer, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d)
+    },
+    {
+        name:"ABSTRACT SHADOW",
+        question:"What remains if everything disappears?",
+        analysis:"Strip away rooms, names, and hierarchy and what's left is density — but the density itself is built from the same sixteen real rooms as Mind Palace, not one arbitrary blob at the center. Bigger rooms, more footprint, leave more sediment: the Lake and the Great Kitchen accumulate the most residue, the Holding Room barely a trace. Invert it, and the claim flips: the official rooms go solid black and vanish into the background, and what's left visible is only the gaps between them — everywhere Steerpike actually moved, his real domestic space, is the negative shape left over once the plan disappears. Every other layer in the stack lights up faintly underneath while inverted, so you're looking straight down through all seven at once.",
+        group: shadowLayer,
+        hit: makeHitPlane(shadowLayer, FOOTPRINT.cx, FOOTPRINT.cz, FOOTPRINT.w, FOOTPRINT.d),
+        invertable: true
+    }
+
+];
+
+// every sub-layer across every layer, flattened, so the fade
+// easing in animate() can ease all of them uniformly regardless
+// of which top-level layer is currently focused
+const ALL_SUBLAYERS = [...TERRITORY_SUBLAYERS, ...SOCIAL_SUBLAYERS, ...CHARACTER_PARACOSM_SUBLAYERS];
+
+const layerHitPlanes = LAYERS.map(l=>l.hit);
+
+//////////////////////////////////////////////////
+// MIND PALACE MODE — a second way to see the same six upper
+// layers, genuinely in 3D this time. Every piece here reuses the
+// SAME generator functions the exploded stack already calls
+// (weakPointGlyph, buildConnection, the ten rule glyphs, stage
+// clusters, heat nodes, the velocity field, all of it) — nothing
+// is simplified or rebuilt from scratch. What changes is where
+// each piece lands: a connector now runs between the two real
+// rooms' own midpoints instead of a flat near-ground line, and a
+// per-room glyph now sits on that room's real roof instead of on
+// an abstract sheet floating above the castle. The exploded stack
+// itself is a completely separate set of objects, untouched.
+//////////////////////////////////////////////////
+
+const EXPLODED_GROUPS = [territorySheet, socialLayer, characterLayer, characterAtlas, engineLayer, shadowLayer];
+
+// TERRITORY, TRUE 3D
+const true3DTerritory = new THREE.Group();
+true3DTerritory.visible = false;
+scene.add(true3DTerritory);
+
+weakPoints.forEach(room=>{
+    true3DTerritory.add(elevate(weakPointGlyph(room), roomRoof(room.name)));
+});
+
+weakEdges.forEach((e,i)=>{
+    true3DTerritory.add(buildConnection(
+        e.a, e.b, CONNECTION_STYLES[i % CONNECTION_STYLES.length],
+        roomMid(e.a.name), roomMid(e.b.name)
+    ));
+});
+
+weakPoints.forEach(room=>{
+    const y1 = roomMid(room.name), y2 = roomMid(authorityRoom.name);
+    const p1 = new THREE.Vector3(room.x,y1,room.z);
+    const p2 = new THREE.Vector3(authorityRoom.x,y2,authorityRoom.z);
+    for(let i=0;i<10;i+=2){
+        const t1=i/10, t2=(i+1)/10;
+        true3DTerritory.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3().lerpVectors(p1,p2,t1),
+                new THREE.Vector3().lerpVectors(p1,p2,t2)
+            ]),
+            new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.14 })
+        ));
+    }
+});
+
+// SOCIAL PARACOSM, TRUE 3D
+const true3DSocial = new THREE.Group();
+true3DSocial.visible = false;
+scene.add(true3DSocial);
+
+characters.forEach(c=>{
+
+    const [name,x,z,r,roomName] = c;
+    const role = ROLE_TAXONOMY[name];
+    const room = roomByName[roomName];
+    const y = roomRoof(roomName);
+
+    const node = new THREE.Mesh(
+        new THREE.CircleGeometry(r,24),
+        new THREE.MeshBasicMaterial({ color:0xffffff })
+    );
+    node.rotation.x = -Math.PI/2;
+
+    true3DSocial.add(elevate(node,y));
+    true3DSocial.add(elevate(haloRings(x,z,r),y));
+    true3DSocial.add(elevate(rule1_maintenanceAnchor(x,z,r),y));
+    true3DSocial.add(elevate(rule1_fatRoom(x,z,room),y));
+    true3DSocial.add(elevate(rule3_personalTendril(x,z,r),y));
+    true3DSocial.add(elevate(rule4_roleTaxonomy(x,z,role),y));
+    true3DSocial.add(elevate(rule6_roleShape(x,z,r,role),y));
+    true3DSocial.add(elevate(rule7_accessZone(x,z,role),y));
+    true3DSocial.add(elevate(rule7_accessMap(x,z,role),y));
+    true3DSocial.add(elevate(rule8_behaviorTicks(x,z,r,room.use),y));
+    true3DSocial.add(elevate(rule8_behaviorTrail(x,z,name),y));
+
+    if(KNOWLEDGE_ROLE[name]){
+        true3DSocial.add(elevate(rule9_knowledge(x,z,r,KNOWLEDGE_ROLE[name]),y));
+        true3DSocial.add(elevate(rule9_knowledgeMap(x,z,name,KNOWLEDGE_ROLE[name]),y));
+    }
+
+});
+
+[...new Set(characters.map(c=>c[4]))].forEach(roomName=>{
+    true3DSocial.add(elevate(rule2_ritualVsFunction(roomByName[roomName]), roomRoof(roomName)));
+});
+
+LINEAGE.forEach(([a,b])=>{
+    const roomA = characters.find(c=>c[0]===a)[4];
+    true3DSocial.add(elevate(rule5_lineage(nodeByName[a],nodeByName[b]), roomRoof(roomA)));
+});
+
+true3DSocial.add(elevate(
+    burst(nodeByName.Sepulchrave.x, nodeByName.Sepulchrave.z, 12,70,220,0xffffff,0.10),
+    roomRoof("Library")
+));
+true3DSocial.add(elevate(
+    burst(nodeByName.Steerpike.x, nodeByName.Steerpike.z, 18,60,260,0xff5555,0.20),
+    roomRoof("Great Kitchen")
+));
+
+relationships.forEach(([a,b,type])=>{
+
+    const A = nodeByName[a], B = nodeByName[b];
+    const homeA = characters.find(c=>c[0]===a)[4];
+    const homeB = characters.find(c=>c[0]===b)[4];
+    const p1 = new THREE.Vector3(A.x, roomMid(homeA), A.z);
+    const p2 = new THREE.Vector3(B.x, roomMid(homeB), B.z);
+
+    let line;
+    if(type==="authority") line = pcbTrace(p1,p2,0x4fa8ff,0.55,false);
+    else if(type==="manipulation") line = pcbTrace(p1,p2,0xff5555,0.6,true);
+    else if(type==="duty") line = pcbTrace(p1,p2,0xffffff,0.22,false);
+    else if(type==="conflict") line = wavyLine(p1,p2,0xdddddd,0.42,24,10);
+
+    true3DSocial.add(line);
+
+});
+
+// CHARACTER PARACOSM, TRUE 3D — Steerpike's arc as a real trail
+// through each room's own midpoint, rising and falling with the
+// castle itself, plus his stage clusters sitting on each room's roof
+const true3DCharacterParacosm = new THREE.Group();
+true3DCharacterParacosm.visible = false;
+scene.add(true3DCharacterParacosm);
+
+const STEERPIKE_CHAIN = ["Great Kitchen","Holding Room","Fuchsia Attic","Prunesquallor Study","Library","Castle Roofscape","Upper Towers","Master Ritual"];
+
+for(let i=0;i<STEERPIKE_CHAIN.length-1;i++){
+    const a = roomByName[STEERPIKE_CHAIN[i]], b = roomByName[STEERPIKE_CHAIN[i+1]];
+    true3DCharacterParacosm.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(a.x, roomMid(a.name), a.z),
+            new THREE.Vector3(b.x, roomMid(b.name), b.z)
+        ]),
+        new THREE.LineBasicMaterial({ color:0xff5555, transparent:true, opacity:0.5 })
+    ));
+}
+
+const STAGE_DATA = [
+    { rooms:["Great Kitchen"], stage:1, count:260, radius:90, opacity:0.65 },
+    { rooms:["Holding Room","Fuchsia Attic"], stage:2, count:160, radius:70, opacity:0.6 },
+    { rooms:["Prunesquallor Study","Library"], stage:3, count:200, radius:75, opacity:0.65 },
+    { rooms:["Castle Roofscape","Upper Towers"], stage:4, count:220, radius:85, opacity:0.7 },
+    { rooms:["Master Ritual"], stage:5, count:400, radius:55, opacity:0.85 }
+];
+
+STAGE_DATA.forEach(sd=>{
+    sd.rooms.forEach(name=>{
+        const room = roomByName[name];
+        const clusterGroup = new THREE.Group();
+        stageCluster(clusterGroup, room, sd.count, sd.radius, sd.opacity);
+        stageDither(clusterGroup, room, sd.stage, sd.radius);
+        true3DCharacterParacosm.add(elevate(clusterGroup, roomRoof(name)));
+    });
+});
+
+// CHARACTER ATLAS, TRUE 3D — same subjective-world builder, but
+// each significant room's node sits on its own real roof, and the
+// route between them runs at each room's own real midpoint height
+function buildSubjectiveWorld3D(entries){
+
+    const group = new THREE.Group();
+    const nodes = entries.map(e=>({ ...roomByName[e.room], weight:e.weight }));
+    const sorted = [...nodes].sort((a,b)=>b.weight-a.weight);
+
+    for(let i=0;i<sorted.length-1;i++){
+        const a = sorted[i], b = sorted[i+1];
+        group.add(heatTrail(a,b, a.y+a.h/2, b.y+b.h/2));
+    }
+
+    nodes.forEach(n=>{
+        const y = n.y + n.h;
+        group.add(elevate(heatNode(n.x,n.z,n.weight), y));
+        group.add(elevate(nodeComplex(n.x,n.z,n.weight), y));
+    });
+
+    return group;
+
+}
+
+const true3DCharacterAtlas = new THREE.Group();
+true3DCharacterAtlas.visible = false;
+scene.add(true3DCharacterAtlas);
+
+Object.keys(SUBJECTIVE_WORLDS).forEach(name=>{
+    true3DCharacterAtlas.add(buildSubjectiveWorld3D(SUBJECTIVE_WORLDS[name]));
+});
+
+// STEERPIKE ENGINE, TRUE 3D — the velocity field actually wraps
+// around the real rooms and corridors he passes through (spread
+// across each room's own real height, not hugging a flat floor)
+const true3DEngine = new THREE.Group();
+true3DEngine.visible = false;
+scene.add(true3DEngine);
+
+function steerpikeYAt(t){
+    const n = steerpikeWaypoints.length - 1;
+    const scaled = Math.max(0,Math.min(1,t)) * n;
+    const i = Math.min(n-1, Math.floor(scaled));
+    const localT = scaled - i;
+    const a = steerpikeWaypoints[i], b = steerpikeWaypoints[i+1];
+    const ya = a.y + a.h/2, yb = b.y + b.h/2;
+    const ha = a.h, hb = b.h;
+    return {
+        y: ya + (yb-ya)*localT,
+        spread: Math.max(ha + (hb-ha)*localT, 220)
+    };
+}
+
+const FINE3D_COUNT = 30000;
+const engineFine3D = new THREE.InstancedMesh(
+    new THREE.PlaneGeometry(1,1),
+    new THREE.MeshBasicMaterial({ color:0xff5555, transparent:true, opacity:0.24, side:THREE.DoubleSide }),
+    FINE3D_COUNT
+);
+const fine3DDummy = new THREE.Object3D();
+
+for(let i=0;i<FINE3D_COUNT;i++){
+    const t = Math.random();
+    const p = steerpikePointAt(t);
+    const yInfo = steerpikeYAt(t);
+    const bx = p.x + (Math.random()-0.5)*55;
+    const bz = p.z + (Math.random()-0.5)*55;
+    const by = yInfo.y + (Math.random()-0.5)*yInfo.spread;
+    const size = 0.8 + Math.random()*2.4;
+    fine3DDummy.position.set(bx,by,bz);
+    fine3DDummy.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+    fine3DDummy.scale.set(size,size,1);
+    fine3DDummy.updateMatrix();
+    engineFine3D.setMatrixAt(i, fine3DDummy.matrix);
+}
+engineFine3D.instanceMatrix.needsUpdate = true;
+true3DEngine.add(engineFine3D);
+
+const COARSE3D_COUNT = 5000;
+const engineCoarse3D = new THREE.InstancedMesh(
+    new THREE.PlaneGeometry(1,1),
+    new THREE.MeshBasicMaterial({ color:0xff5555, transparent:true, opacity:0.32, side:THREE.DoubleSide }),
+    COARSE3D_COUNT
+);
+const coarse3DDummy = new THREE.Object3D();
+
+for(let i=0;i<COARSE3D_COUNT;i++){
+    const t = Math.random();
+    const p = steerpikePointAt(t);
+    const yInfo = steerpikeYAt(t);
+    const bx = p.x + (Math.random()-0.5)*70;
+    const bz = p.z + (Math.random()-0.5)*70;
+    const by = yInfo.y + (Math.random()-0.5)*yInfo.spread;
+    const size = 4 + Math.random()*10;
+    coarse3DDummy.position.set(bx,by,bz);
+    coarse3DDummy.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+    coarse3DDummy.scale.set(size,size,1);
+    coarse3DDummy.updateMatrix();
+    engineCoarse3D.setMatrixAt(i, coarse3DDummy.matrix);
+}
+engineCoarse3D.instanceMatrix.needsUpdate = true;
+true3DEngine.add(engineCoarse3D);
+
+function stripeBurst3D(room,count){
+    const group = new THREE.Group();
+    for(let i=0;i<count;i++){
+        const ox = (Math.random()-0.5)*100;
+        const oz = (Math.random()-0.5)*100;
+        const h = room.h * (0.15+Math.random()*0.65);
+        const y0 = room.y + Math.random()*Math.max(room.h-h,1);
+        group.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(room.x+ox,y0,room.z+oz),
+                new THREE.Vector3(room.x+ox,y0+h,room.z+oz)
+            ]),
+            new THREE.LineBasicMaterial({ color:0xff5555, transparent:true, opacity:0.15+Math.random()*0.35 })
+        ));
+    }
+    return group;
+}
+
+steerpikeWaypoints.forEach(room=>{ true3DEngine.add(stripeBurst3D(room,70)); });
+
+steerpikeWaypoints.forEach(room=>{
+    const y = roomMid(room.name);
+    [1,1.6,2.3].forEach((mult,i)=>{
+        const pts=[];
+        const r = 40*mult;
+        for(let a=0;a<=Math.PI*2+0.05;a+=0.1){
+            pts.push(new THREE.Vector3(room.x+Math.cos(a)*r, y, room.z+Math.sin(a)*r));
+        }
+        true3DEngine.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(pts),
+            new THREE.LineBasicMaterial({ color:0xff5555, transparent:true, opacity:0.35/(i+1) })
+        ));
+    });
+});
+
+true3DEngine.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(
+        steerpikeWaypoints.map(r=>new THREE.Vector3(r.x, roomMid(r.name), r.z))
+    ),
+    new THREE.LineBasicMaterial({ color:0xff5555, transparent:true, opacity:0.7 })
+));
+
+// ABSTRACT SHADOW, TRUE 3D — residue fills each real room's actual
+// volume (floor to roof), weighted by that room's own footprint
+const true3DShadow = new THREE.Group();
+true3DShadow.visible = false;
+scene.add(true3DShadow);
+
+{
+    const maxArea = Math.max(...rooms.map(r=>r.w*r.d));
+
+    rooms.forEach(r=>{
+        const area = r.w*r.d;
+        const count = Math.max(150, Math.round(3000*area/maxArea));
+        const radius = Math.sqrt(area)/2;
+        const pts=[];
+
+        for(let i=0;i<count;i++){
+            const angle = Math.random()*Math.PI*2;
+            const rad = Math.pow(Math.random(),2)*radius;
+            pts.push(
+                r.x+Math.cos(angle)*rad,
+                r.y+Math.random()*r.h,
+                r.z+Math.sin(angle)*rad
+            );
+        }
+
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(pts,3));
+        true3DShadow.add(new THREE.Points(geo, new THREE.PointsMaterial({
+            size:2, color:0xffffff, transparent:true, opacity:0.05
+        })));
+    });
+}
+
+const TRUE3D_GROUPS = [true3DTerritory, true3DSocial, true3DCharacterParacosm, true3DCharacterAtlas, true3DEngine, true3DShadow];
+
+const CONNECTOR_LABELS = [
+    "TERRITORY",
+    "SOCIAL PARACOSM",
+    "CHARACTER PARACOSM",
+    "CHARACTER ATLAS",
+    "STEERPIKE ENGINE",
+    "ABSTRACT SHADOW"
+];
+
+const modeButtonEl = document.getElementById("modeButton");
+const connectorPanelEl = document.getElementById("connectorPanel");
+
+TRUE3D_GROUPS.forEach((group,i)=>{
+
+    const label = document.createElement("label");
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = true;
+    input.addEventListener("change",()=>{
+        group.visible = input.checked;
+    });
+
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(CONNECTOR_LABELS[i]));
+    connectorPanelEl.appendChild(label);
+
+});
+
+let mindPalaceMode = false;
+
+function setMindPalaceMode(on){
+
+    if(flying) setFlying(false);
+
+    mindPalaceMode = on;
+
+    if(on){
+
+        if(focusedSubLayer) selectSubLayer(null);
+        if(focusedLayer) returnToAtlas();
+
+        EXPLODED_GROUPS.forEach(g=>{ g.visible = false; });
+
+        Array.from(connectorPanelEl.querySelectorAll("input")).forEach((input,i)=>{
+            TRUE3D_GROUPS[i].visible = input.checked;
+        });
+
+        LAYERS.forEach(l=>{ l.targetFade = 1; });
+        atlasLabelsGroup.visible = false;
+
+        connectorPanelEl.style.display = "block";
+        modeButtonEl.textContent = "EXPLODED VIEW";
+        modeButtonEl.classList.add("active");
+
+        // framed from the fixed FOOTPRINT numbers, not a live
+        // bounding box of the scene — some of Mind Palace's own
+        // memory-noise ghost rooms carry a pre-existing NaN in
+        // their point data, and measuring the live geometry here
+        // picks that up and permanently breaks the camera
+        const center = new THREE.Vector3(FOOTPRINT.cx, 600, FOOTPRINT.cz);
+        const span = Math.max(FOOTPRINT.w, FOOTPRINT.d);
+        const fitHeight = Math.max(span*0.8,900);
+
+        camLookTarget.copy(center);
+        camPosTarget.set(center.x, center.y+fitHeight, center.z+fitHeight*0.6);
+        camTransitioning = true;
+
+        uiLayerName.textContent = "MIND PALACE — EVERY LAYER, IN 3D";
+        uiLayerQuestion.textContent = "toggle layers on the left · scroll to zoom, drag to orbit, freely · click EXPLODED VIEW or Esc to return";
+        uiLayerAnalysis.classList.remove("visible");
+
+    }else{
+
+        EXPLODED_GROUPS.forEach(g=>{ g.visible = true; });
+        TRUE3D_GROUPS.forEach(g=>{ g.visible = false; });
+
+        atlasLabelsGroup.visible = true;
+
+        connectorPanelEl.style.display = "none";
+        modeButtonEl.textContent = "MIND PALACE VIEW";
+        modeButtonEl.classList.remove("active");
+
+        returnToAtlas();
+
+    }
+
+}
+
+modeButtonEl.addEventListener("click",()=>{
+    setMindPalaceMode(!mindPalaceMode);
+});
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+// ATLAS-OVERVIEW LABELS — a short leader line and the layer's
+// name in plain text above every slab, visible only in the full
+// atlas view. Clicking the text enters that layer, same as
+// clicking the slab itself — this is a pointer, not a preview card
+//////////////////////////////////////////////////
+
+const atlasLabelsGroup = new THREE.Group();
+scene.add(atlasLabelsGroup);
+
+const atlasLabels = LAYERS.map(layer=>{
+
+    const anchorX = FOOTPRINT.cx;
+    const anchorZ = FOOTPRINT.cz;
+    const anchorY = layer.group.position.y;
+    const labelY = anchorY + 260;
+
+    const leaderGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(anchorX, anchorY+20, anchorZ),
+        new THREE.Vector3(anchorX, labelY, anchorZ)
+    ]);
+    const leaderMat = new THREE.LineDashedMaterial({
+        color:0xffffff, transparent:true, opacity:0.35,
+        dashSize:6, gapSize:5
+    });
+    const leader = new THREE.Line(leaderGeo, leaderMat);
+    leader.computeLineDistances();
+    atlasLabelsGroup.add(leader);
+
+    const div = document.createElement('div');
+    div.className = 'atlas-label';
+    div.textContent = layer.name;
+    div.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        if(focusedLayer===null) focusLayer(layer);
+    });
+    document.body.appendChild(div);
+
+    return { div, pos: new THREE.Vector3(anchorX, labelY, anchorZ) };
+
+});
+
+function updateAtlasLabels(){
+
+    const visible = (focusedLayer===null) && !mindPalaceMode;
+
+    atlasLabelsGroup.visible = visible;
+
+    atlasLabels.forEach(l=>{
+
+        l.div.style.opacity = visible ? '1' : '0';
+        l.div.style.pointerEvents = visible ? 'auto' : 'none';
+        if(!visible) return; // no need to reposition while faded out
+
+        const p = l.pos.clone();
+        p.project(camera);
+
+        l.div.style.left = ((p.x*0.5+0.5)*window.innerWidth)+'px';
+        l.div.style.top = ((-p.y*0.5+0.5)*window.innerHeight)+'px';
+
+    });
+
+}
+
+// tag every material in every layer with its resting opacity,
+// so we can fade layers up/down without losing their original look
+LAYERS.forEach(layer=>{
+
+    layer.group.traverse(child=>{
+
+        if(child===layer.hit) return;
+
+        if(child.material){
+
+            const mats = Array.isArray(child.material) ? child.material : [child.material];
+
+            mats.forEach(m=>{
+
+                if(m.userData.baseOpacity===undefined){
+                    m.userData.baseOpacity = m.transparent ? m.opacity : 1;
+                    m.transparent = true;
+                }
+
+            });
+
+        }
+
+    });
+
+    layer.currentFade = 1;
+    layer.targetFade = 1;
+
+});
+
+function setLayerFade(layer,factor){
+
+    layer.group.traverse(child=>{
+
+        if(child===layer.hit) return;
+
+        if(child.material){
+
+            const mats = Array.isArray(child.material) ? child.material : [child.material];
+
+            mats.forEach(m=>{
+                m.opacity = m.userData.baseOpacity * factor;
+            });
+
+        }
+
+    });
+
+}
+
+// same fade logic, but for a raw group (used for Paracosm Atlas's
+// nested sub-layers, which don't have their own top-level hit-plane)
+function setGroupFade(group,factor){
+
+    group.traverse(child=>{
+
+        if(child.material){
+
+            const mats = Array.isArray(child.material) ? child.material : [child.material];
+
+            mats.forEach(m=>{
+                if(m.userData.baseOpacity!==undefined){
+                    m.opacity = m.userData.baseOpacity * factor;
+                }
+            });
+
+        }
+
+    });
+
+}
+
+let focusedLayer = null;
+let focusedSubLayer = null;
+let camPosTarget = ATLAS_CAM_POS.clone();
+let camLookTarget = ATLAS_CAM_TARGET.clone();
+let camTransitioning = true; // true only while easing into a new view
+
+const flyButtonEl = document.getElementById("flyButton");
+
+function setFlying(on){
+
+    flying = on;
+
+    flyControls.enabled = on;
+    controls.enabled = !on;
+
+    if(on){
+        // don't let the layer-focus auto-lerp fight the pilot's
+        // own movement once they're actually flying
+        camTransitioning = false;
+    }else{
+        // landing — give OrbitControls a sensible new pivot point
+        // out in front of wherever the camera actually ended up,
+        // instead of orbiting around a stale target from before takeoff
+        const forward = new THREE.Vector3();
+        camera.getWorldDirection(forward);
+        controls.target.copy(camera.position).addScaledVector(forward, 300);
+    }
+
+    flyButtonEl.classList.toggle("active", on);
+    flyButtonEl.textContent = on ? "FLY MODE — ESC TO LAND" : "FLY MODE (F)";
+
+}
+
+flyButtonEl.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    setFlying(!flying);
+});
+
+const subLayerTabsEl = document.getElementById("subLayerTabs");
+const subLayerTooltipEl = document.getElementById("subLayerTooltip");
+
+let shadowInverted = false;
+
+const invertToggleEl = document.getElementById("invertToggle");
+const invertButtonEl = document.getElementById("invertButton");
+
+invertButtonEl.addEventListener("click",(e)=>{
+
+    e.stopPropagation(); // don't let the 3D click handler also fire
+    setShadowInverted(!shadowInverted);
+
+});
+
+function setShadowInverted(on){
+
+    shadowInverted = on;
+
+    shadowInvertGroup.visible = on;
+    shadowDensityPoints.visible = !on;
+
+    invertButtonEl.classList.toggle("active", on);
+
+    // "highlight every layer under it" — while inverted, every
+    // other layer in the stack becomes fully visible instead of
+    // staying dimmed to the normal 0.05 background fade, so
+    // looking down through Abstract Shadow reveals the whole
+    // stack at once, not just a faint hint of it
+    LAYERS.forEach(l=>{
+        if(l!==focusedLayer) l.targetFade = on ? 1 : 0.05;
+    });
+
+}
+
+// tabs are built fresh for whichever layer is focused — Territory
+// gets 3 buttons, Social Paracosm gets 10, Character Paracosm
+// gets 5, anything without subLayers gets none
+function buildTabs(layer){
+
+    subLayerTabsEl.innerHTML = "";
+    subLayerTooltipEl.style.display = "none";
+
+    if(!layer || !layer.subLayers){
+        subLayerTabsEl.style.display = "none";
+        return;
+    }
+
+    layer.subLayers.forEach(sub=>{
+
+        const btn = document.createElement("button");
+        btn.textContent = sub.name;
+
+        btn.addEventListener("click",(e)=>{
+            e.stopPropagation(); // don't let the 3D click handler also fire
+            selectSubLayer(focusedSubLayer===sub ? null : sub);
+        });
+
+        // hover shows what you're actually looking at — the
+        // visual language and the meaning behind it — since a
+        // tab name alone doesn't say what curve, line, dot, or
+        // hatch pattern it isolates
+        btn.addEventListener("mouseenter",()=>{
+            subLayerTooltipEl.innerHTML =
+                '<span class="term">' + sub.name + '</span>' + sub.analysis;
+            subLayerTooltipEl.style.display = "block";
+        });
+
+        btn.addEventListener("mousemove",(e)=>{
+            subLayerTooltipEl.style.left = (e.clientX+16)+"px";
+            subLayerTooltipEl.style.top = (e.clientY+16)+"px";
+        });
+
+        btn.addEventListener("mouseleave",()=>{
+            subLayerTooltipEl.style.display = "none";
+        });
+
+        subLayerTabsEl.appendChild(btn);
+
+    });
+
+    subLayerTabsEl.style.display = "flex";
+    updateTabHighlight();
+
+}
+
+function updateTabHighlight(){
+
+    if(!focusedLayer || !focusedLayer.subLayers) return;
+
+    Array.from(subLayerTabsEl.children).forEach((btn,i)=>{
+        btn.classList.toggle("active", focusedSubLayer===focusedLayer.subLayers[i]);
+    });
+
+}
+
+// select one sub-layer within the focused layer to isolate it,
+// or pass null to show all of them overlaid again
+function selectSubLayer(sub){
+
+    focusedSubLayer = sub;
+
+    if(focusedLayer && focusedLayer.subLayers){
+        focusedLayer.subLayers.forEach(s=>{
+            s.targetFade = (sub===null) ? 1 : (s===sub ? 1.5 : 0.05);
+        });
+    }
+
+    if(sub){
+
+        // the camera was framed to fit the WHOLE layer — isolating
+        // one sub-layer often leaves only a small, localized cluster
+        // of content inside that big frame, which reads as "nothing
+        // there" even though it's technically showing correctly.
+        // reframe to fit just this sub-layer's own content instead.
+        const box = new THREE.Box3().setFromObject(sub.group);
+
+        if(!box.isEmpty()){
+
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+            const size = new THREE.Vector3();
+            box.getSize(size);
+
+            const span = Math.max(size.x, size.z, 120); // floor so tiny glyphs don't zoom in absurdly close
+            const fitHeight = Math.max(span*1.3, 300);
+
+            camLookTarget.copy(center);
+            camPosTarget.set(center.x, sub.group.parent.position.y + fitHeight, center.z + 1);
+            camTransitioning = true;
+
+        }
+
+        uiLayerQuestion.textContent = sub.question + "  ·  click the tab again to see them all";
+        uiLayerAnalysis.textContent = sub.analysis;
+
+    }else if(focusedLayer){
+
+        // back to the full layer's own framing
+        const box = new THREE.Box3().setFromObject(focusedLayer.hit);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const span = Math.max(size.x, size.z);
+        const fitHeight = Math.max(span*0.95, 400);
+
+        camLookTarget.copy(center);
+        camPosTarget.set(center.x, focusedLayer.group.position.y + fitHeight, center.z + 1);
+        camTransitioning = true;
+
+        uiLayerQuestion.textContent = focusedLayer.question + "  ·  double-click or press Esc to return";
+        uiLayerAnalysis.textContent = focusedLayer.analysis;
+
+    }
+
+    updateTabHighlight();
+
+}
+
+function focusLayer(layer){
+
+    focusedLayer = layer;
+    focusedSubLayer = null;
+
+    const box = new THREE.Box3().setFromObject(layer.hit);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    const size = new THREE.Vector3();
+    box.getSize(size);
+
+    // fit the camera height to how wide this layer actually is —
+    // a flat height worked for the small layers but for a wide one
+    // like Mind Palace (4400 units across) it left the camera
+    // hovering just above empty ground between room clusters,
+    // too close to see anything
+    const span = Math.max(size.x, size.z);
+    const fitHeight = Math.max(span * 0.95, 400);
+
+    camLookTarget.copy(center);
+    camPosTarget.set(center.x, layer.group.position.y + fitHeight, center.z + 1);
+    camTransitioning = true;
+
+    LAYERS.forEach(l=>{
+        l.targetFade = (l===layer) ? 1.5 : 0.05;
+    });
+
+    if(layer.subLayers){
+        layer.subLayers.forEach(s=>{ s.targetFade = 1; });
+    }
+
+    buildTabs(layer);
+
+    if(layer.invertable){
+        invertToggleEl.style.display = "block";
+    }else{
+        invertToggleEl.style.display = "none";
+        if(shadowInverted) setShadowInverted(false);
+    }
+
+    uiLayerName.textContent = layer.name;
+    uiLayerQuestion.textContent = layer.question + "  ·  double-click or press Esc to return";
+    uiLayerAnalysis.textContent = layer.analysis;
+    uiLayerAnalysis.classList.add("visible");
+
+}
+
+function returnToAtlas(){
+
+    focusedLayer = null;
+    focusedSubLayer = null;
+
+    camPosTarget.copy(ATLAS_CAM_POS);
+    camLookTarget.copy(ATLAS_CAM_TARGET);
+    camTransitioning = true;
+
+    LAYERS.forEach(l=>{ l.targetFade = 1; });
+
+    subLayerTabsEl.innerHTML = "";
+    subLayerTabsEl.style.display = "none";
+
+    invertToggleEl.style.display = "none";
+    if(shadowInverted) setShadowInverted(false);
+
+    uiLayerName.textContent = "ATLAS — SEVEN LAYERS";
+    uiLayerQuestion.textContent = "click a layer to enter it";
+    uiLayerAnalysis.classList.remove("visible");
+
+}
+
+// distinguish an intentional click from an orbit/pan/zoom release —
+// OrbitControls fires a native "click" on mouseup same as a plain
+// click does, so without this, ending a drag anywhere near a
+// layer's hit-plane (which covers nearly the whole footprint) would
+// snap the camera into that layer and discard whatever view you'd
+// just navigated to. Only treat it as "enter a layer" if the mouse
+// barely moved between press and release.
+let mouseDownPos = null;
+
+window.addEventListener("mousedown",(event)=>{
+    mouseDownPos = { x:event.clientX, y:event.clientY };
+});
+
+window.addEventListener("click",(event)=>{
+
+    if(flying) return; // piloting — clicks are for looking around, not entering layers
+    if(mindPalaceMode) return; // no exploded-stack layer to click into while collapsed
+
+    // once already inside a layer, a click never re-hit-tests the
+    // stack. The layer hit-planes are stacked directly above one
+    // another (same x/z footprint, every 1000 units up), and a
+    // single screen click can ray through several of them at once —
+    // that was landing on whichever plane happened to be nearest
+    // the camera, not the layer actually being viewed, and bounced
+    // you sideways into a different layer mid-inspection. Esc or
+    // double-click steps back out first; only then can a click
+    // enter a different layer.
+    if(focusedLayer) return;
+
+    if(mouseDownPos){
+        const dx = event.clientX-mouseDownPos.x, dy = event.clientY-mouseDownPos.y;
+        if(Math.hypot(dx,dy) > 6) return; // that was a drag, not a click
+    }
+
+    // single click only ever ENTERS a layer — it never exits one.
+    // orbiting/dragging inside a focused layer used to misfire the
+    // old "click to exit" logic; double-click below handles exiting
+    // instead, so free camera movement never accidentally kicks you out
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse,camera);
+
+    const hits = raycaster.intersectObjects(layerHitPlanes);
+
+    if(hits.length){
+
+        const layer = LAYERS.find(l=>l.hit===hits[0].object);
+
+        if(layer && layer!==focusedLayer){
+            focusLayer(layer);
+        }
+
+    }
+
+});
+
+// double-click, anywhere — always steps back one level: out of a
+// sub-layer first if one is selected, otherwise out to the full
+// atlas overview. no hit-testing needed, so it works reliably from
+// any camera angle instead of requiring a precise click on empty space
+window.addEventListener("dblclick",(event)=>{
+
+    if(flying) return; // double-click while piloting shouldn't land you back at the atlas
+    if(mindPalaceMode) return; // step back out via the MIND PALACE VIEW button / Esc instead
+
+    if(mouseDownPos){
+        const dx = event.clientX-mouseDownPos.x, dy = event.clientY-mouseDownPos.y;
+        if(Math.hypot(dx,dy) > 6) return; // that was a drag, not a double-click
+    }
+
+    if(focusedSubLayer){
+        selectSubLayer(null);
+    }else if(focusedLayer){
+        returnToAtlas();
+    }
+
+});
+
+window.addEventListener("keydown",(event)=>{
+
+    if(event.key==="f" || event.key==="F"){
+        setFlying(!flying);
+        return;
+    }
+
+    if(event.key!=="Escape") return;
+
+    if(flying) setFlying(false);
+    else if(mindPalaceMode) setMindPalaceMode(false);
+    else if(focusedSubLayer) selectSubLayer(null);
+    else if(focusedLayer) returnToAtlas();
+
+});
+
+//////////////////////////////////////////////////
+// UPDATE LABELS
+//////////////////////////////////////////////////
+
+animate = function(){
+
+    requestAnimationFrame(animate);
+
+    // smoothly move the camera toward whichever target is active
+    // (atlas overview, or the focused layer's top-down view) —
+    // only while actually transitioning, otherwise this would fight
+    // the user's own zoom/pan/rotate every frame forever. Also
+    // skipped entirely while flying — the pilot has full control.
+    if(camTransitioning && !flying){
+
+        camera.position.lerp(camPosTarget,0.06);
+        controls.target.lerp(camLookTarget,0.06);
+
+        if(camera.position.distanceTo(camPosTarget) < 1 &&
+           controls.target.distanceTo(camLookTarget) < 1){
+            camTransitioning = false;
+        }
+
+    }
+
+    // ease every layer's opacity toward its target (1 = active, 0.05 = faded)
+    LAYERS.forEach(l=>{
+
+        if(Math.abs(l.currentFade - l.targetFade) > 0.001){
+            l.currentFade += (l.targetFade - l.currentFade) * 0.08;
+            setLayerFade(l,l.currentFade);
+        }
+
+    });
+
+    // same easing, one level deeper, for every sub-layer across
+    // Territory, Social Paracosm, and Character Paracosm — each
+    // is now its own top-level slab, but still has internal tabs
+    ALL_SUBLAYERS.forEach(s=>{
+
+        if(Math.abs(s.currentFade - s.targetFade) > 0.001){
+            s.currentFade += (s.targetFade - s.currentFade) * 0.08;
+            setGroupFade(s.group, s.currentFade);
+        }
+
+    });
+
+    // Mind Palace rooms drift slowly — the castle's true shape is
+    // never fixed, so nothing here holds perfectly still
+    const t = performance.now() * 0.001;
+
+    roomMeshes.forEach(room=>{
+
+        const base = room.userData.floatBase;
+        const offset = Math.sin(t*room.userData.floatSpeed + room.userData.floatPhase) * 6;
+
+        room.position.y = base.y + offset;
+
+        if(room.userData.hitbox){
+            room.userData.hitbox.position.y = base.y + room.userData.hitbox.geometry.parameters.height/2 + offset;
+        }
+
+    });
+
+    if(flying){
+        flyControls.update(flyClock.getDelta());
+    }else{
+        controls.update();
+    }
+
+    updateLabels();
+    updateAtlasLabels();
+
+    composer.render();
+
+};
+
+animate();
+
+window.addEventListener(
+'resize',
+()=>{
+
+    camera.aspect=
+    window.innerWidth/
+    window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    composer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+}
+);
+
+</script>
+
+</body>
+</html>

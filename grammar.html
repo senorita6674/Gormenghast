@@ -1,0 +1,927 @@
+
+
+Atlas · HTML
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>The Grammar of Steerpike</title>
+ 
+<style>
+html,body{
+margin:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:#000;
+font-family:Arial, sans-serif;
+}
+ 
+canvas{
+display:block;
+}
+#backLink{position:fixed;top:16px;left:20px;z-index:10000;color:#fff;text-decoration:none;font-family:'Courier New',Courier,monospace;font-size:14px;letter-spacing:2px;padding:4px 0;opacity:.75;transition:opacity .25s}
+#backLink:hover{opacity:1}
+
+</style>
+</head>
+ 
+<body>
+<a id="backLink" href="index.html" title="Back to home">&larr; HOME</a>
+ 
+<canvas id="canvas"></canvas>
+ 
+<script>
+ 
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+ 
+function resize(){
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+}
+window.addEventListener("resize",resize);
+resize();
+ 
+ 
+ 
+// ======================
+// CAMERA
+// ======================
+ 
+let camera={
+x:800,
+y:400,
+zoom:0.6
+};
+ 
+ 
+ 
+// ======================
+// OPERATIONS
+// ======================
+ 
+const rows=[
+"XRAY",
+"PEEL",
+"UNFOLD",
+"THREAD",
+"HOOK",
+"POCKET",
+"FOLD",
+"SCAFFOLD",
+"PATCH",
+"FRACTURE"
+];
+ 
+const meanings={
+XRAY: "Seeing beyond surfaces",
+
+PEEL: "Access to hidden layers",
+
+UNFOLD: "Discovery",
+
+FOLD: "Hidden",
+
+CREASE: "Latent possibility",
+
+POCKET: "Concealed occupation",
+
+WRAP: "Protection from visibility",
+
+VEIL: "Partial revelation",
+
+COMPRESSION: "Knowledge concealed within density",
+
+CLIP: "Temporary attachment",
+
+TAPE: "Temporary occupation",
+
+THREAD: "Temporary connection",
+
+PIN: "Momentary fixation",
+
+HOOK: "Opportunistic access",
+
+TIE: "Provisional relationship",
+
+SUSPEND: "Not fully resolved",
+
+PATCH: "Improvised adaptation"
+};
+ 
+// ======================
+// BEATS
+// Deduplicated, paraphrased story beats (own words, not quotations).
+// Each beat has an operation type and a short gist string.
+// ======================
+ 
+const beats=[
+["FOLD","A tunnel-mouth opens off the kitchen into darkness"],
+["XRAY","He knows every turn of the tunnel by feel"],
+["THREAD","Steps, archway, narrow passage, a small door"],
+["PATCH","Invents a cover story about hearing footsteps upstairs"],
+["PEEL","Really he'd been scouting the first floor, slid down a banister to hide"],
+["XRAY","Unfamiliar voices — but he's already mapped most of the castle's secrets"],
+["SCAFFOLD","Sits out on a dead tree's branch above a long drop, unfazed"],
+["HOOK","Finds Flay, asks about the white cats and who owns them"],
+["PEEL","Flay shows him a peephole hidden behind a portrait frame"],
+["XRAY","Through the hole: a corridor with the Countess's chamber at its center"],
+["FOLD","Marched down a passage and locked into a room"],
+["FRACTURE","Climbs a creeper up the wall, hauls himself over a sill, crashes into an attic"],
+["HOOK","Feigns curiosity about the Room of Roots to get inside"],
+["UNFOLD","The room is revealed as a maze of painted, tangled roots"],
+["PATCH","Startled by footsteps above, covers with an invented explanation"],
+["HOOK","Talks his way into a position and a spacious room with the Prunesquallors"],
+["XRAY","Looks out over the dark rooftops, imagining the castle's hidden lives"],
+["THREAD","Follows a hidden, practiced path across a tree's horizontal limb"],
+["PATCH","Realizes the 'perilous' crossing is actually a safe, flat walkway"],
+["FRACTURE","Claims to have been lost for hours in the corridors"],
+["HOOK","Climbs the ivy to a locked room, refuses to go back to the kitchen"],
+["SCAFFOLD","Rigs a ladder from a windowsill during a fire, ferries people out"],
+["POCKET","A hidden alcove near the ladder shelters him from the heat"],
+["THREAD","Slips back over the sill once unobserved, gone to the far side"],
+["HOOK","Guides the dazed Lord Sepulchrave along by the elbow"],
+["FOLD","Has to stoop through a cramped, decaying doorway with no relief inside"],
+["HOOK","Sees the Earl's coming madness as his own opening into the castle's secrets"],
+["HOOK","Quietly plans a move into rooms near the Aunts' apartments"],
+["FRACTURE","Leads a vault search for a missing relic; his theory falls apart"],
+["FOLD","Picks rooms on the Aunts' floor, plots to make them 'unknown to Gormenghast'"],
+["PATCH","Orders the Room of Roots repainted as his first command to the twins"],
+["FRACTURE","A third figure's sudden entrance startles a cat mid-room"],
+["PEEL","The Countess stares out through a star-shaped crack in a window"],
+["FOLD","Vanishes from the room the moment the Countess looks for him"],
+["HOOK","Slips under Flay's arm through a door, beating him into the room"],
+["THREAD","A procession dwindles away down a half-lit corridor"],
+["THREAD","The dining hall's seating order is laid out around the long table"],
+["POCKET","Unnoticed, there are ten seated at the table though only nine are counted"],
+["POCKET","The night before, hides something under the dais and removes it unseen"],
+["POCKET","Rigs and reclines in a hidden hammock slung beneath the table"],
+["XRAY","From under the table, reads the commotion above by watching legs move"],
+["PATCH","Slips out, slams the door as if just arriving, feigns urgency"],
+["THREAD","Escorts the Aunts back to their apartments and enters with them"],
+["THREAD","Stalks a rival up a candlelit stair, closing the distance"],
+["FRACTURE","Loses sight of his quarry's silhouette rounding a landing"],
+["HOOK","Plans to lure an enemy into a ruined, roof-open hall"],
+["THREAD","Walks backward down a passage, keeping watch over a shoulder"],
+["FRACTURE","The one being guarded suddenly veers off alone and vanishes from sight"],
+["HOOK","Bursts into the ruined hall just ahead of his pursuer"],
+["FRACTURE","Finds his enemy blocking the very doorway he came in by"],
+["XRAY","Both men warily survey the web-strewn, beam-fallen room"],
+["FRACTURE","Backs himself into a corner of his own choosing"],
+["FRACTURE","A rain-flooded drop has replaced the usual ledge by an open window"],
+["FRACTURE","A pursuer catches his toe at the flooded threshold"],
+["FRACTURE","Something looms above him, out of the water-filled dark"],
+["POCKET","Settles into exile, finds and provisions two hidden mountainside caves"],
+["XRAY","Regularly climbs to a vantage point to watch the distant castle skyline"],
+["XRAY","Spots a tiny human figure moving along a far-off crag"],
+["HOOK","A castle-wide search becomes his pretext to enter rooms he'd wanted to explore"],
+["FRACTURE","Told bluntly that his freelance access is over"],
+["HOOK","Told he'll earn his keep by learning a new, ritual trade"],
+["XRAY","A decayed view of the castle glimpsed through branches across water"],
+["PEEL","Watches a room through a slit cut into a draped sheet"],
+["POCKET","Hides a stolen object, wrapped in cloth, among lumber in a passage"],
+["THREAD","Slides down an alternate banister for a quick, unnoticed exit"],
+["SCAFFOLD","Takes over a new suite of rooms overlooking the lawns"],
+["HOOK","Oversees funeral ritual, angling to become its sole authority"],
+["HOOK","Picks an isolated tree to watch a procession while staying visible himself"],
+["XRAY","A watcher notes the procession's shadows lengthening as it nears the Castle"],
+["XRAY","Closing image: doors, echoes, and lights waking through the passageways at nightfall"]
+];
+ 
+const papers=beats.map(([type,gist],i)=>{
+ 
+const columns = 8;
+ 
+const col = i % columns;
+const row = Math.floor(i / columns);
+ 
+return{
+id:i,
+type,
+gist,
+w:130,
+h:95,
+x:col*190,
+y:row*190,
+hover:false
+}
+ 
+});
+ 
+ 
+// ======================
+// LINKS
+// hand-picked thematic echoes between non-adjacent beats
+// ======================
+ 
+const hiddenLinks=[
+[0,11],
+[4,5],
+[8,9],
+[13,14],
+[17,18],
+[25,27],
+[35,37],
+[42,46],
+[49,51],
+[56,59]
+];
+ 
+ 
+ 
+// ======================
+// MOUSE
+// ======================
+ 
+let mouse={
+x:0,
+y:0
+};
+ 
+let dragPaper=null;
+let dragWorld=false;
+let lastX=0;
+let lastY=0;
+ 
+ 
+ 
+function screenToWorld(x,y){
+ 
+return{
+ 
+x:
+(x-canvas.width/2)/camera.zoom
++camera.x,
+ 
+y:
+(y-canvas.height/2)/camera.zoom
++camera.y
+ 
+};
+ 
+}
+ 
+ 
+ 
+canvas.addEventListener("mousemove",e=>{
+ 
+mouse.x=e.clientX;
+mouse.y=e.clientY;
+ 
+const w=screenToWorld(
+e.clientX,
+e.clientY
+);
+ 
+papers.forEach(p=>{
+ 
+p.hover=
+ 
+w.x>p.x-p.w/2 &&
+w.x<p.x+p.w/2 &&
+w.y>p.y-p.h/2 &&
+w.y<p.y+p.h/2;
+ 
+});
+ 
+if(dragPaper){
+ 
+dragPaper.x=w.x;
+dragPaper.y=w.y;
+ 
+}
+ 
+if(dragWorld){
+ 
+camera.x-=(e.clientX-lastX)/camera.zoom;
+camera.y-=(e.clientY-lastY)/camera.zoom;
+ 
+lastX=e.clientX;
+lastY=e.clientY;
+ 
+}
+ 
+});
+ 
+ 
+ 
+canvas.addEventListener("mousedown",e=>{
+ 
+const w=screenToWorld(
+e.clientX,
+e.clientY
+);
+ 
+if(e.button===0){
+ 
+for(const p of papers){
+ 
+if(
+ 
+w.x>p.x-p.w/2 &&
+w.x<p.x+p.w/2 &&
+w.y>p.y-p.h/2 &&
+w.y<p.y+p.h/2
+ 
+){
+ 
+dragPaper=p;
+return;
+ 
+}
+ 
+}
+ 
+}
+ 
+if(e.button===2){
+ 
+dragWorld=true;
+ 
+lastX=e.clientX;
+lastY=e.clientY;
+ 
+}
+ 
+});
+ 
+ 
+ 
+canvas.addEventListener("mouseup",()=>{
+ 
+dragPaper=null;
+dragWorld=false;
+ 
+});
+ 
+ 
+ 
+canvas.addEventListener("contextmenu",e=>{
+ 
+e.preventDefault();
+ 
+});
+ 
+ 
+ 
+canvas.addEventListener("wheel",e=>{
+ 
+e.preventDefault();
+ 
+camera.zoom*=e.deltaY>0
+?0.92
+:1.08;
+ 
+camera.zoom=Math.max(
+0.15,
+Math.min(5,camera.zoom)
+);
+ 
+});
+ 
+ 
+ 
+// ======================
+// DRAW
+// ======================
+ 
+function beginCamera(){
+ 
+ctx.save();
+ 
+ctx.translate(
+canvas.width/2,
+canvas.height/2
+);
+ 
+ctx.scale(
+camera.zoom,
+camera.zoom
+);
+ 
+ctx.translate(
+-camera.x,
+-camera.y
+);
+ 
+}
+ 
+ 
+ 
+function endCamera(){
+ 
+ctx.restore();
+ 
+}
+ 
+ 
+ 
+function tornRect(x,y,w,h){
+ 
+ctx.beginPath();
+ 
+ctx.moveTo(x-w/2,y-h/2);
+ 
+for(let i=0;i<12;i++){
+ 
+ctx.lineTo(
+x-w/2+w*(i/12),
+y-h/2+(Math.random()-0.5)*4
+);
+ 
+}
+ 
+ctx.lineTo(x+w/2,y-h/2);
+ 
+ctx.lineTo(x+w/2,y+h/2);
+ 
+for(let i=12;i>=0;i--){
+ 
+ctx.lineTo(
+x-w/2+w*(i/12),
+y+h/2+(Math.random()-0.5)*4
+);
+ 
+}
+ 
+ctx.closePath();
+ 
+}
+ 
+ 
+ 
+function drawPaper(p){
+ 
+ctx.fillStyle="#ece8df";
+ctx.strokeStyle="#222";
+ctx.lineWidth=1;
+ 
+tornRect(
+p.x,
+p.y,
+p.w,
+p.h
+);
+ 
+ctx.fill();
+ctx.stroke();
+ 
+let mode=p.type;
+ 
+if(p.hover){
+ 
+if(mode==="FOLD") mode="UNFOLD";
+else if(mode==="UNFOLD") mode="FOLD";
+ 
+}
+ 
+ctx.strokeStyle="#000";
+ 
+switch(mode){
+ 
+case"FOLD":
+ 
+ctx.beginPath();
+ 
+ctx.moveTo(
+p.x,
+p.y-p.h/2
+);
+ 
+ctx.lineTo(
+p.x,
+p.y+p.h/2
+);
+ 
+ctx.stroke();
+ 
+break;
+ 
+ 
+ 
+case"UNFOLD":
+ 
+ctx.beginPath();
+ 
+ctx.moveTo(
+p.x-p.w/4,
+p.y-p.h/2
+);
+ 
+ctx.lineTo(
+p.x-p.w/4,
+p.y+p.h/2
+);
+ 
+ctx.moveTo(
+p.x+p.w/4,
+p.y-p.h/2
+);
+ 
+ctx.lineTo(
+p.x+p.w/4,
+p.y+p.h/2
+);
+ 
+ctx.stroke();
+ 
+break;
+ 
+ 
+ 
+case"POCKET":
+ 
+ctx.beginPath();
+ 
+ctx.moveTo(
+p.x-30,
+p.y
+);
+ 
+ctx.lineTo(
+p.x,
+p.y+25
+);
+ 
+ctx.lineTo(
+p.x+30,
+p.y
+);
+ 
+ctx.stroke();
+ 
+break;
+ 
+ 
+ 
+case"THREAD":
+ 
+ctx.beginPath();
+ctx.arc(p.x,p.y,10,0,Math.PI*2);
+ctx.stroke();
+break;
+ 
+ 
+ 
+case"HOOK":
+ 
+ctx.beginPath();
+ctx.arc(p.x,p.y,14,0,Math.PI);
+ctx.stroke();
+break;
+ 
+ 
+ 
+case"PEEL":
+ 
+ctx.beginPath();
+ 
+ctx.moveTo(
+p.x+20,
+p.y-45
+);
+ 
+ctx.lineTo(
+p.x+45,
+p.y-20
+);
+ 
+ctx.lineTo(
+p.x+20,
+p.y-20
+);
+ 
+ctx.closePath();
+ 
+ctx.stroke();
+ 
+break;
+ 
+ 
+ 
+case"SCAFFOLD":
+ 
+ctx.strokeRect(
+p.x-25,
+p.y-25,
+50,
+50
+);
+ 
+ctx.beginPath();
+ 
+ctx.moveTo(
+p.x-25,p.y-25
+);
+ 
+ctx.lineTo(
+p.x+25,p.y+25
+);
+ 
+ctx.moveTo(
+p.x+25,p.y-25
+);
+ 
+ctx.lineTo(
+p.x-25,p.y+25
+);
+ 
+ctx.stroke();
+ 
+break;
+ 
+ 
+ 
+case"PATCH":
+ 
+ctx.strokeRect(
+p.x-20,
+p.y-20,
+40,
+40
+);
+ 
+break;
+ 
+ 
+ 
+case"FRACTURE":
+ 
+ctx.beginPath();
+ 
+ctx.moveTo(
+p.x-25,p.y-30
+);
+ 
+ctx.lineTo(
+p.x,p.y
+);
+ 
+ctx.lineTo(
+p.x+20,p.y-10
+);
+ 
+ctx.lineTo(
+p.x+30,p.y+25
+);
+ 
+ctx.stroke();
+ 
+break;
+ 
+ 
+ 
+case"XRAY":
+ 
+ctx.strokeStyle="rgba(255,255,255,.3)";
+ 
+ctx.strokeRect(
+p.x-70,
+p.y-50,
+p.w,
+p.h
+);
+ 
+ctx.strokeRect(
+p.x-85,
+p.y-65,
+p.w,
+p.h
+);
+ 
+break;
+ 
+}
+ 
+ctx.fillStyle="white";
+ctx.font="11px Arial";
+ctx.textAlign="center";
+ 
+ctx.fillText(
+p.type,
+p.x,
+p.y+p.h/2+18
+);
+ 
+}
+ 
+ 
+ 
+function drawChronology(){
+ 
+ctx.strokeStyle="rgba(255,255,255,.18)";
+ctx.lineWidth=1;
+ 
+const columns=8;
+ 
+for(let i=0;i<papers.length-1;i++){
+ 
+const a=papers[i];
+const b=papers[i+1];
+ 
+const sameRow =
+Math.floor(i/columns) ===
+Math.floor((i+1)/columns);
+ 
+ctx.beginPath();
+ 
+if(sameRow){
+ 
+ctx.moveTo(a.x,a.y);
+ctx.lineTo(b.x,b.y);
+ 
+}else{
+ 
+ctx.moveTo(a.x,a.y);
+ 
+ctx.bezierCurveTo(
+a.x+120,
+a.y,
+b.x-120,
+b.y,
+b.x,
+b.y
+);
+ 
+}
+ 
+ctx.stroke();
+ 
+}
+ 
+}
+ 
+ 
+ 
+function drawHiddenLinks(){
+ 
+ctx.strokeStyle=
+"rgba(255,255,255,1)";
+ 
+ctx.lineWidth=2;
+ 
+ctx.setLineDash([12,8]);
+ 
+hiddenLinks.forEach(l=>{
+ 
+const a=papers[l[0]];
+const b=papers[l[1]];
+ 
+if(!a||!b) return;
+ 
+ctx.beginPath();
+ 
+ctx.moveTo(a.x,a.y);
+ctx.lineTo(b.x,b.y);
+ctx.stroke();
+ 
+});
+ 
+ctx.setLineDash([]);
+ 
+}
+ 
+ 
+ 
+function drawLegend(){
+ 
+ctx.fillStyle="rgba(0,0,0,.85)";
+ 
+ctx.fillRect(
+20,
+56,
+280,
+330
+);
+ 
+ctx.fillStyle="white";
+ctx.font="14px Arial";
+ctx.textAlign="left";
+ 
+let y=86;
+ 
+for(const r of rows){
+ 
+ctx.fillText(
+r+" → "+meanings[r],
+40,
+y
+);
+ 
+y+=28;
+ 
+}
+ 
+}
+ 
+function drawQuoteTooltip(){
+ 
+const hovered=papers.find(p=>p.hover);
+ 
+if(!hovered) return;
+ 
+ctx.fillStyle="rgba(0,0,0,.92)";
+ 
+const boxW=420;
+const boxH=100;
+ 
+const x=mouse.x+20;
+const y=mouse.y+20;
+ 
+ctx.fillRect(
+x,
+y,
+boxW,
+boxH
+);
+ 
+ctx.strokeStyle="white";
+ctx.strokeRect(
+x,
+y,
+boxW,
+boxH
+);
+ 
+ctx.fillStyle="white";
+ 
+ctx.font="14px Arial";
+ 
+wrapText(
+hovered.gist,
+x+20,
+y+30,
+boxW-40,
+22
+);
+ 
+}
+ 
+function wrapText(text,x,y,maxWidth,lineHeight){
+ 
+const words=text.split(" ");
+ 
+let line="";
+ 
+for(let n=0;n<words.length;n++){
+ 
+const test=line+words[n]+" ";
+ 
+const width=
+ctx.measureText(test).width;
+ 
+if(width>maxWidth && n>0){
+ 
+ctx.fillText(line,x,y);
+ 
+line=words[n]+" ";
+ 
+y+=lineHeight;
+ 
+}else{
+ 
+line=test;
+ 
+}
+ 
+}
+ 
+ctx.fillText(line,x,y);
+ 
+}
+ 
+function animate(){
+ 
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+ 
+beginCamera();
+ 
+drawChronology();
+drawHiddenLinks();
+ 
+papers.forEach(drawPaper);
+ 
+endCamera();
+ 
+drawLegend();
+drawQuoteTooltip();
+ 
+requestAnimationFrame(
+animate
+);
+ 
+}
+ 
+animate();
+ 
+</script>
+ 
+</body>
+</html>
+ 
