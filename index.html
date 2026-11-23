@@ -7,22 +7,25 @@
 <style>
 html,body{margin:0;height:100%;background:#000;color:#fff;font-family:'Courier New',Courier,monospace}
 main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:56px;padding:40px 24px;box-sizing:border-box;text-align:center}
-h1{margin:0;font-weight:400;font-size:clamp(26px,5vw,52px);letter-spacing:.18em;text-transform:uppercase}
+h1{margin:0;font-weight:400;font-size:clamp(26px,5vw,52px);letter-spacing:.18em;text-transform:uppercase;line-height:1.1}
 nav{display:flex;flex-direction:column;gap:18px;width:min(420px,100%)}
 a.btn{display:block;padding:16px 20px;border:1px solid #fff;color:#fff;text-decoration:none;font-size:15px;letter-spacing:.15em;text-transform:uppercase;transition:background .25s,color .25s}
 a.btn:hover,a.btn:focus-visible{background:#fff;color:#000;outline:none}
 a.btn small{display:block;margin-top:6px;font-size:11px;letter-spacing:.08em;text-transform:none;opacity:.6}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-h1,a.btn{opacity:0;animation:rise 2.4s ease forwards}
-h1{animation-delay:.6s}
-a.btn:nth-child(1){animation-delay:2.6s}
-a.btn:nth-child(2){animation-delay:3.6s}
-@media (prefers-reduced-motion:reduce){h1,a.btn{opacity:1;animation:none}}
+h1 span,a.btn{opacity:0;animation:rise 2.4s ease forwards}
+h1 span{display:block}
+.l1{font-size:.45em;letter-spacing:.35em;animation-delay:.6s!important}
+.l2{font-size:.3em;letter-spacing:.4em;margin:.9em 0;color:#888;animation-delay:1.8s!important}
+.l3{animation-delay:3s!important}
+a.btn:nth-child(1){animation-delay:5s}
+a.btn:nth-child(2){animation-delay:6s}
+@media (prefers-reduced-motion:reduce){h1 span,a.btn{opacity:1;animation:none}}
 </style>
 </head>
 <body>
 <main>
-  <h1>Welcome to<br>Gormenghast</h1>
+  <h1><span class="l1">welcome to</span><span class="l2">the</span><span class="l3">Gormenghast</span></h1>
   <nav>
     <a class="btn" href="grammar.html">The Grammar of Steerpike<small>his story, beat by beat, turned into a system</small></a>
     <a class="btn" href="atlas.html">The Atlas<small>seven layers of the castle</small></a>
